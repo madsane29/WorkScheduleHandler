@@ -57,7 +57,7 @@ public class Controller implements Initializable {
     @FXML
     Button addButton;
     /*@FXML
-    Button searchButton;*/
+    Button search;*/
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Tables">
     @FXML
@@ -133,10 +133,8 @@ public class Controller implements Initializable {
         totalTime.setCellValueFactory(new PropertyValueFactory<>("totalTime"));
 
         table.getColumns().addAll(date, startTime, endTime, totalTime);
-        /*TVWOData.addAll(db.getAllTVWO());
-        splitTVWODataToWorkTimeData();
-        table.setItems(TVWOData);*/
         refreshTableFromDB();
+        //searchButton();
     }
 
     public void splitTVWODataToWorkTimeData() {
@@ -175,6 +173,8 @@ public class Controller implements Initializable {
         }
     }
 
+    
+    // Summs the worked hours shown in table
     public void calculateTotalWorkedHours() {
         workTimeData.clear();
         splitTVWODataToWorkTimeData();
@@ -265,29 +265,7 @@ public class Controller implements Initializable {
                     bigextra += end - start;
                     
                     }
-
-                
                     
-                    /*if (((start >= 360 && start <= 1380) || start == 0) && ((end >= 1320 || end <= 600) || end == 0)) {
-                        if (start < 1320) {
-                            start = 1320;
-                        }
-                        if (end == 0) {
-                            end = 1440;
-                        } else if (end >= 360) {
-                            end = 360 + 1440;
-                        } else if (end < 360) {
-                            end += 1440;
-                        }
-                        
-
-                        if (end - start == 480) {
-                            gotBonus = true;
-                        }
-                        bigextra += end - start;
-                    }
-*/
-                
                     if (gotBonus && (dayOfWeek.equals("Friday") || dayOfWeek.equals("Saturday"))) {
                         fridayOrSaturday++;
                     }
@@ -351,16 +329,16 @@ public class Controller implements Initializable {
     }
     
     public void refreshTableFromDB() {
-        //workTimeData.clear();
         TVWOData.clear();
         TVWOData.addAll(db.getAllTVWO());
         splitTVWODataToWorkTimeData();
         table.setItems(TVWOData);
+        search();
         calculateTotalWorkedHours();
     }
     
-    @FXML
-    private void searchButton() {
+    
+    private void search() {
         Boolean t = false;
 
         int year, month;
@@ -425,7 +403,6 @@ public class Controller implements Initializable {
                 db.addWork(workTMP);
                 
                 refreshTableFromDB();
-                //calculateTotalWorkedHours();
             }
 
         } catch (Exception ex) {
@@ -467,22 +444,17 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         datePicker.setValue(LocalDate.now());
-
         tableColumns();
-        calculateTotalWorkedHours();
         fillChoiceBoxes();
+        refreshTableFromDB();
         
         yearChoiceBox.setOnAction((event) -> {
-            searchButton();
+            search();
         });
         monthChoiceBox.setOnAction((event) -> {
-            searchButton();
+            search();
         });
-
-        /*wageHourly.setOnAction((event) -> {
-            calculateTotalWorkedHours();
-        });*/
-        //wageHourly.setOnKeyPressed(value);
+        
         wageHourly.textProperty().addListener((observable, oldValue, newValue) -> {
             calculateTotalWorkedHours();
         });

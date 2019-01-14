@@ -12,7 +12,7 @@ public class WorkTime {
     private int day;
     private int id;
     
-    public WorkTime(HourMinute start, HourMinute end, HourMinute total) {
+   /* public WorkTime(HourMinute start, HourMinute end, HourMinute total) {
         this.startHour = start.getHour();
         this.startMinute = start.getMinute();
         this.endHour = end.getHour();
@@ -23,7 +23,7 @@ public class WorkTime {
         this.month = -1000;
         this.day = -1000;
         this.id = -1000;
-    }
+    }*/
 
     public WorkTime(HourMinute start, HourMinute end, HourMinute total, int year, int month, int day, int id) {
         this.startHour = start.getHour();

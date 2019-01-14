@@ -20,8 +20,7 @@ public class WorkScheduleHandler extends Application {
         stage.setResizable(false);
         stage.show();
         } catch(Exception ex) {
-            //System.out.println("Problem in WorkScheduleHandler/start: " + ex);
-            ex.printStackTrace();
+            System.out.println("Problem in WorkScheduleHandler/start: " + ex);
         }
          
     }
