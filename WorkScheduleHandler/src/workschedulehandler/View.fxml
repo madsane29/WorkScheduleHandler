@@ -9,7 +9,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<SplitPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="workschedulehandler.Controller">
   <items>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
          <children>
@@ -38,82 +38,44 @@
                     <items>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                            <children>
-                              <SplitPane dividerPositions="0.7" layoutY="26.0" orientation="VERTICAL" prefHeight="365.0" prefWidth="175.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                <items>
-                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
+                              <VBox alignment="TOP_CENTER" prefHeight="323.0" prefWidth="205.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0">
+                                 <children>
+                                    <HBox alignment="TOP_CENTER" spacing="5.0">
                                        <children>
-                                          <VBox spacing="10.0">
+                                          <VBox layoutX="34.0" layoutY="78.0">
                                              <children>
-                                                <HBox spacing="5.0">
+                                                <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="28.0" layoutY="594.0" maxWidth="50.0" text="Date:">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="38.0" layoutY="604.0" maxWidth="50.0" text="Start:">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="22.0" layoutY="644.0" maxWidth="50.0" text="End:">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </VBox>
+                                          <VBox layoutX="93.0" layoutY="83.0" spacing="5.0">
+                                             <children>
+                                                <DatePicker id="date" fx:id="datePicker" layoutX="93.0" layoutY="66.0" maxWidth="100.0" prefHeight="25.0" prefWidth="100.0" />
+                                                <HBox layoutX="93.0" layoutY="109.0">
                                                    <children>
-                                                      <VBox layoutX="34.0" layoutY="78.0">
+                                                      <VBox layoutX="93.0" layoutY="109.0" spacing="2.0">
                                                          <children>
-                                                            <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="28.0" layoutY="594.0" maxWidth="50.0" text="Date:">
-                                                               <font>
-                                                                  <Font size="18.0" />
-                                                               </font>
-                                                            </Label>
-                                                            <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="38.0" layoutY="604.0" maxWidth="50.0" text="Start:">
-                                                               <font>
-                                                                  <Font size="18.0" />
-                                                               </font>
-                                                            </Label>
-                                                            <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="22.0" layoutY="644.0" maxWidth="50.0" text="End:">
-                                                               <font>
-                                                                  <Font size="18.0" />
-                                                               </font>
-                                                            </Label>
+                                                            <TextField id="startHourInput" fx:id="startHourInput" layoutX="93.0" layoutY="109.0" maxWidth="30.0" nodeOrientation="RIGHT_TO_LEFT" text="8" />
+                                                            <TextField id="endHourInput" fx:id="endHourInput" layoutX="93.0" layoutY="134.0" maxWidth="30.0" nodeOrientation="RIGHT_TO_LEFT" text="16" />
                                                          </children>
                                                       </VBox>
-                                                      <VBox layoutX="93.0" layoutY="83.0" spacing="5.0">
+                                                      <VBox layoutX="134.0" layoutY="109.0" spacing="2.0">
                                                          <children>
-                                                            <DatePicker id="date" fx:id="datePicker" layoutX="93.0" layoutY="66.0" maxWidth="100.0" prefHeight="25.0" prefWidth="100.0" />
-                                                            <HBox layoutX="93.0" layoutY="109.0">
-                                                               <children>
-                                                                  <VBox layoutX="93.0" layoutY="109.0" spacing="2.0">
-                                                                     <children>
-                                                                        <TextField id="startHourInput" fx:id="startHourInput1" layoutX="93.0" layoutY="109.0" maxWidth="30.0" nodeOrientation="RIGHT_TO_LEFT" text="8" />
-                                                                        <TextField id="endHourInput" fx:id="endHourInput1" layoutX="93.0" layoutY="134.0" maxWidth="30.0" nodeOrientation="RIGHT_TO_LEFT" text="16" />
-                                                                     </children>
-                                                                  </VBox>
-                                                                  <VBox layoutX="134.0" layoutY="109.0" spacing="2.0">
-                                                                     <children>
-                                                                        <TextField id="startMinuteInput" fx:id="startMinuteInput1" layoutX="134.0" layoutY="109.0" maxWidth="30.0" nodeOrientation="RIGHT_TO_LEFT" text="00" />
-                                                                        <TextField id="endMinuteInput" fx:id="endMinuteInput1" layoutX="134.0" layoutY="134.0" maxWidth="30.0" nodeOrientation="RIGHT_TO_LEFT" text="00" />
-                                                                     </children>
-                                                                  </VBox>
-                                                               </children>
-                                                            </HBox>
-                                                         </children>
-                                                      </VBox>
-                                                   </children>
-                                                </HBox>
-                                                <VBox spacing="20.0">
-                                                   <children>
-                                                      <Button id="addButton" fx:id="addButton1" layoutX="238.0" layoutY="364.0" mnemonicParsing="false" onAction="#addButton" prefHeight="25.0" prefWidth="150.0" text="Add" />
-                                                      <Button id="deleteButton" fx:id="deleteButton1" layoutX="265.0" layoutY="418.0" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="150.0" text="Delete selected" />
-                                                   </children>
-                                                </VBox>
-                                                <HBox spacing="20.0">
-                                                   <children>
-                                                      <VBox layoutX="536.0" layoutY="826.0">
-                                                         <children>
-                                                            <Label alignment="CENTER_RIGHT" layoutX="493.0" layoutY="813.0" maxWidth="1.7976931348623157E308" text="Year:">
-                                                               <font>
-                                                                  <Font size="18.0" />
-                                                               </font>
-                                                            </Label>
-                                                            <Label alignment="CENTER_RIGHT" layoutX="598.0" layoutY="813.0" maxWidth="1.7976931348623157E308" text="Month:">
-                                                               <font>
-                                                                  <Font size="18.0" />
-                                                               </font>
-                                                            </Label>
-                                                         </children>
-                                                      </VBox>
-                                                      <VBox spacing="5.0">
-                                                         <children>
-                                                            <ChoiceBox id="yearChoiceBox" fx:id="yearChoiceBox" layoutX="597.0" layoutY="856.0" />
-                                                            <ChoiceBox id="monthChoiceBox" fx:id="monthChoiceBox" layoutX="597.0" layoutY="884.0" />
+                                                            <TextField id="startMinuteInput" fx:id="startMinuteInput" layoutX="134.0" layoutY="109.0" maxWidth="30.0" nodeOrientation="RIGHT_TO_LEFT" text="00" />
+                                                            <TextField id="endMinuteInput" fx:id="endMinuteInput" layoutX="134.0" layoutY="134.0" maxWidth="30.0" nodeOrientation="RIGHT_TO_LEFT" text="00" />
                                                          </children>
                                                       </VBox>
                                                    </children>
@@ -121,10 +83,45 @@
                                              </children>
                                           </VBox>
                                        </children>
-                                    </AnchorPane>
-                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
-                                </items>
-                              </SplitPane>
+                                    </HBox>
+                                    <VBox alignment="TOP_CENTER" spacing="20.0">
+                                       <children>
+                                          <Button id="addButton" fx:id="addButton" layoutX="238.0" layoutY="364.0" mnemonicParsing="false" onAction="#addButton" prefHeight="25.0" prefWidth="150.0" text="Add" />
+                                          <Separator prefHeight="10.0" prefWidth="200.0" />
+                                          <Button id="deleteButton" fx:id="deleteButton" layoutX="265.0" layoutY="418.0" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="150.0" text="Delete selected" />
+                                       </children>
+                                    </VBox>
+                                    <Separator prefWidth="200.0">
+                                       <VBox.margin>
+                                          <Insets top="15.0" />
+                                       </VBox.margin>
+                                    </Separator>
+                                    <HBox alignment="TOP_CENTER" spacing="10.0">
+                                       <children>
+                                          <VBox layoutX="536.0" layoutY="826.0">
+                                             <children>
+                                                <Label alignment="CENTER_RIGHT" layoutX="493.0" layoutY="813.0" maxWidth="1.7976931348623157E308" text="Year:">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label alignment="CENTER_RIGHT" layoutX="598.0" layoutY="813.0" maxWidth="1.7976931348623157E308" text="Month:">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </VBox>
+                                          <VBox spacing="5.0">
+                                             <children>
+                                                <ChoiceBox id="yearChoiceBox" fx:id="yearChoiceBox" layoutX="597.0" layoutY="856.0" />
+                                                <ChoiceBox id="monthChoiceBox" fx:id="monthChoiceBox" layoutX="597.0" layoutY="884.0" />
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
                            </children>
                         </AnchorPane>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
@@ -138,13 +135,13 @@
                                     </AnchorPane>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                        <children>
-                                          <HBox prefHeight="106.0" prefWidth="412.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <HBox alignment="CENTER" prefHeight="106.0" prefWidth="412.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0">
                                              <children>
-                                                <HBox spacing="10.0">
+                                                <HBox alignment="CENTER" spacing="10.0">
                                                    <children>
                                                       <VBox>
                                                          <children>
-                                                            <Label alignment="CENTER_RIGHT" layoutX="10.0" layoutY="10.0" maxWidth="1.7976931348623157E308" text="Wage (hourly): ">
+                                                            <Label alignment="CENTER_RIGHT" layoutX="10.0" layoutY="10.0" maxWidth="1.7976931348623157E308" text="Wage (hourly):">
                                                                <font>
                                                                   <Font size="16.0" />
                                                                </font>
@@ -163,7 +160,7 @@
                                                       </VBox>
                                                       <VBox>
                                                          <children>
-                                                            <TextField alignment="CENTER" maxWidth="40.0" promptText="1400" />
+                                                            <TextField id="wageHourly" fx:id="wageHourly" alignment="CENTER" maxWidth="40.0" text="0" />
                                                             <Label id="totalLabel" fx:id="totalLabel" alignment="CENTER" maxWidth="1.7976931348623157E308" text="00:00">
                                                                <font>
                                                                   <Font size="16.0" />
@@ -178,21 +175,21 @@
                                                       </VBox>
                                                    </children>
                                                 </HBox>
-                                                <HBox spacing="10.0">
+                                                <HBox alignment="CENTER" spacing="10.0">
                                                    <children>
-                                                      <VBox>
+                                                      <VBox alignment="TOP_RIGHT">
                                                          <children>
-                                                            <Label id="normalSalaryPerHourLabel" fx:id="normalSalaryPerHourLabel" layoutX="840.0" layoutY="789.0" text="06-18">
+                                                            <Label contentDisplay="RIGHT" layoutX="840.0" layoutY="789.0" text="06-18   (+0%):">
                                                                <font>
                                                                   <Font size="16.0" />
                                                                </font>
                                                             </Label>
-                                                            <Label id="extraSalaryPerHourLabel" fx:id="extraSalaryPerHourLabel" layoutX="840.0" layoutY="806.0" text="18-22">
+                                                            <Label layoutX="840.0" layoutY="806.0" text="18-22 (+30%):">
                                                                <font>
                                                                   <Font size="16.0" />
                                                                </font>
                                                             </Label>
-                                                            <Label id="bigextraSalaryPerHourLabel" fx:id="bigextraSalaryPerHourLabel" layoutX="840.0" layoutY="826.0" text="22-06">
+                                                            <Label layoutX="840.0" layoutY="826.0" text="22-06 (+40%):">
                                                                <font>
                                                                   <Font size="16.0" />
                                                                </font>
@@ -220,7 +217,7 @@
                                                       </VBox>
                                                    </children>
                                                 </HBox>
-                                                <HBox layoutX="619.0" layoutY="775.0" spacing="5.0">
+                                                <HBox alignment="CENTER" layoutX="619.0" layoutY="775.0" spacing="5.0">
                                                    <children>
                                                       <VBox>
                                                          <children>
