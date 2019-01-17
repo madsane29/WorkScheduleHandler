@@ -42,8 +42,6 @@ public class WorkTime {
     public String toString() {
         return this.startHour+":"+this.startMinute+ "  " +this.endHour+":"+this.endMinute + "  " + this.totalHour+":"+this.totalMinute + " " + this.year + "." + this.month + "." + this.day; 
     }
-
-    
     
     //<editor-fold defaultstate="collapsed" desc="GETTERS">
     public int getStartHour() {

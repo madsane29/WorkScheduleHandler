@@ -120,6 +120,12 @@
                                           </VBox>
                                        </children>
                                     </HBox>
+                                    <Separator layoutX="10.0" layoutY="227.0" prefWidth="200.0" />
+                                    <VBox alignment="TOP_CENTER" prefHeight="323.0" prefWidth="205.0" spacing="10.0">
+                                       <children>
+                                          <ChoiceBox fx:id="nameChoiceBox" prefWidth="150.0" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </VBox>
                            </children>
@@ -240,6 +246,11 @@
                                                       </VBox>
                                                       <VBox>
                                                          <children>
+                                                            <Label id="totalam" fx:id="totalam1" text="Gross/Net:">
+                                                               <font>
+                                                                  <Font size="16.0" />
+                                                               </font>
+                                                            </Label>
                                                             <Label id="totalam" fx:id="totalam" layoutX="915.0" layoutY="804.0" text="Gross">
                                                                <font>
                                                                   <Font size="16.0" />

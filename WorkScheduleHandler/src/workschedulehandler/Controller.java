@@ -7,10 +7,14 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.Year;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -33,78 +37,109 @@ public class Controller implements Initializable {
     DB db = new DB();
     private final ObservableList<TableViewWriteOut> TVWOData = FXCollections.observableArrayList();
     private final ObservableList<WorkTime> workTimeData = FXCollections.observableArrayList();
-    
+
 //<editor-fold defaultstate="collapsed" desc="FXML">
 //<editor-fold defaultstate="collapsed" desc="DatePickers">
     @FXML
-            DatePicker datePicker;
+    DatePicker datePicker;
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="TextFields">
     @FXML
-            TextField startHourInput;
+    TextField startHourInput;
     @FXML
-            TextField endHourInput;
+    TextField endHourInput;
     @FXML
-            TextField startMinuteInput;
+    TextField startMinuteInput;
     @FXML
-            TextField endMinuteInput;
+    TextField endMinuteInput;
     @FXML
-            TextField wageHourly;
+    TextField wageHourly;
+    TextField searchTextField;
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Buttons">
     @FXML
     Button deleteButton;
     @FXML
     Button addButton;
-    /*@FXML
-    Button search;*/
+    @FXML
+    Button searchButton;
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Tables">
     @FXML
-            TableView table;
+    TableView table;
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Labels">
     @FXML
-            Label totalLabel;
+    Label totalLabel;
     @FXML
-            Label bonusLabel;
+    Label bonusLabel;
     @FXML
-            Label normalHoursLabel;
+    Label normalHoursLabel;
     @FXML
-            Label extraHoursLabel;
+    Label extraHoursLabel;
     @FXML
-            Label bigextraHoursLabel;
+    Label bigextraHoursLabel;
     @FXML
-            Label normalAmount;
+    Label normalAmount;
     @FXML
-            Label extraAmount;
+    Label extraAmount;
     @FXML
-            Label bigextraAmount;
+    Label bigextraAmount;
     @FXML
-            Label totalam;
+    Label totalam;
     @FXML
-            Label net;
-    
+    Label net;
+
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="ChoiceBoxes">
     @FXML
             ChoiceBox yearChoiceBox;
     @FXML
             ChoiceBox monthChoiceBox;
+    @FXML
+    ChoiceBox nameChoiceBox;
 //</editor-fold>
 //</editor-fold>
-
     
+//<editor-fold defaultstate="collapsed" desc="CHOICE BOXES">
     public void fillChoiceBoxes() {
-        ObservableList<String> years = FXCollections.observableArrayList("All", "2017", "2018", "2019", "2020", "2021");
+        setYearChoiceBox();
+        setMonthChoiceBox();
+        setNameChoiceBox();
+    }
+    
+    public void setMonthChoiceBox() {
         ObservableList<String> months = FXCollections.observableArrayList("All", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
-
-        yearChoiceBox.setItems(years);
         monthChoiceBox.setItems(months);
-
-        yearChoiceBox.setValue("All");
         monthChoiceBox.setValue("All");
     }
+    
+    public void setYearChoiceBox() {
+        int year = Year.now().getValue();
+        ArrayList<String> list = new ArrayList<>();
+        list.add("All");
+        
+        for (int i = 2017; i <= year; i++) {
+            list.add(""+i);
+        }
+        ObservableList<String> years = FXCollections.observableList(list);
+        
+        yearChoiceBox.setItems(years);
+        yearChoiceBox.setValue("All");
+    }
+    
+    public void setNameChoiceBox() {
+        ArrayList<String> list = new ArrayList<>();
+        
+        list = db.getNames();
+        list.add(0, "All");
+        
+        ObservableList<String> names = FXCollections.observableList(list);
+        nameChoiceBox.setItems(names);
+        nameChoiceBox.setValue("All");
+        
+    }
+//</editor-fold>
 
     public void tableColumns() {
         TableColumn date = new TableColumn("Date");
@@ -122,10 +157,10 @@ public class Controller implements Initializable {
         endTime.setMinWidth(endTimePrefWidth);
         totalTime.setMinWidth(totalTimePrefWidth);
 
-        date.setMaxWidth(100);
-        startTime.setMaxWidth(100);
-        endTime.setMaxWidth(100);
-        totalTime.setMaxWidth(100);
+        date.setMaxWidth(130);
+        startTime.setMaxWidth(130);
+        endTime.setMaxWidth(130);
+        totalTime.setMaxWidth(130);
 
         date.setCellValueFactory(new PropertyValueFactory<>("date"));
         startTime.setCellValueFactory(new PropertyValueFactory<>("startTime"));
@@ -134,7 +169,6 @@ public class Controller implements Initializable {
 
         table.getColumns().addAll(date, startTime, endTime, totalTime);
         refreshTableFromDB();
-        //searchButton();
     }
 
     public void splitTVWODataToWorkTimeData() {
@@ -172,7 +206,6 @@ public class Controller implements Initializable {
             workTimeData.add(wt);
         }
     }
-
     
     // Summs the worked hours shown in table
     public void calculateTotalWorkedHours() {
@@ -337,7 +370,6 @@ public class Controller implements Initializable {
         calculateTotalWorkedHours();
     }
     
-    
     private void search() {
         Boolean t = false;
 
@@ -395,7 +427,7 @@ public class Controller implements Initializable {
 
                 HourMinute startTMP = new HourMinute(startHour, startMinute);
                 HourMinute endTMP = new HourMinute(endHour, endMinute);
-                HourMinute totalTMP = DB.calc(startTMP, endTMP);
+                HourMinute totalTMP = DB.calcTotal(startTMP, endTMP);
                 LocalDate ld = datePicker.getValue();
 
                 WorkTime workTMP = new WorkTime(startTMP, endTMP, totalTMP, ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth(), -1);
@@ -427,10 +459,9 @@ public class Controller implements Initializable {
             Optional<ButtonType> result = alert.showAndWait();
 
             if (result.get() == ButtonType.OK) {
-        db.deleteWork(Integer.parseInt(selectedTVWO.getId()));
-        TVWOData.remove(selectedTVWO);
-        table.setItems(TVWOData);
-        calculateTotalWorkedHours();
+                db.deleteFromTable("worktime", Integer.parseInt(selectedTVWO.getId()));
+                refreshTableFromDB();
+                calculateTotalWorkedHours();
             }
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -456,9 +487,58 @@ public class Controller implements Initializable {
         });
         
         wageHourly.textProperty().addListener((observable, oldValue, newValue) -> {
+            String tmp = wageHourly.getText();            
+            if(tmp.equals("")) wageHourly.setText("0");
             calculateTotalWorkedHours();
         });
+        
+//<editor-fold defaultstate="collapsed" desc="TEXT FIELDS ONLY NUMBERS (TEXT PROPERTIES)">
+startHourInput.textProperty().addListener(new ChangeListener<String>() {
+    @Override
+    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        
+        if (!newValue.matches("\\d*")) {
+            startHourInput.setText(newValue.replaceAll("[^\\d]", ""));
+        }
+    }
+});
+startMinuteInput.textProperty().addListener(new ChangeListener<String>() {
+    @Override
+    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        
+        if (!newValue.matches("\\d*")) {
+            startMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
+        }
+    }
+});
+endHourInput.textProperty().addListener(new ChangeListener<String>() {
+    @Override
+    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        
+        if (!newValue.matches("\\d*")) {
+            endHourInput.setText(newValue.replaceAll("[^\\d]", ""));
+        }
+    }
+});
+endMinuteInput.textProperty().addListener(new ChangeListener<String>() {
+    @Override
+    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        
+        if (!newValue.matches("\\d*")) {
+            endMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
+        }
+    }
+});
+wageHourly.textProperty().addListener(new ChangeListener<String>() {
+    @Override
+    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        
+        if (!newValue.matches("\\d*")) {
+            wageHourly.setText(newValue.replaceAll("[^\\d]", ""));
+        }
+    }
+});
+//</editor-fold>
 
     }
-
 }
