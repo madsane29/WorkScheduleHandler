@@ -1,8 +1,7 @@
 package workschedulehandler;
 
 //<editor-fold defaultstate="collapsed" desc="IMPORTS">
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,6 +9,7 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -26,17 +26,24 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 //</editor-fold>
 
 public class Controller implements Initializable {
-    
+
     DB db = new DB();
-    private final ObservableList<TableViewWriteOut> TVWOData = FXCollections.observableArrayList();
     private final ObservableList<WorkTime> workTimeData = FXCollections.observableArrayList();
+    private final ObservableList<TableViewWriteOutExtended> TVWODataExtended = FXCollections.observableArrayList();
+
+    private final ArrayList<WorkTime> workTimeDataArrayList = new ArrayList<>();
+    private final ArrayList<Worker> workerDataArrayList = new ArrayList<>();
 
 //<editor-fold defaultstate="collapsed" desc="FXML">
 //<editor-fold defaultstate="collapsed" desc="DatePickers">
@@ -54,7 +61,10 @@ public class Controller implements Initializable {
     TextField endMinuteInput;
     @FXML
     TextField wageHourly;
+    @FXML
     TextField searchTextField;
+    @FXML
+    TextField workerNameTextField;
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Buttons">
     @FXML
@@ -63,6 +73,12 @@ public class Controller implements Initializable {
     Button addButton;
     @FXML
     Button searchButton;
+    @FXML
+    Button openAddNewWorkerButton;
+    @FXML
+    Button addNewWorkerButton;
+    @FXML
+    Button cancelNewWorkerButton;
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Tables">
     @FXML
@@ -93,129 +109,200 @@ public class Controller implements Initializable {
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="ChoiceBoxes">
     @FXML
-            ChoiceBox yearChoiceBox;
+    ChoiceBox yearChoiceBox;
     @FXML
-            ChoiceBox monthChoiceBox;
+    ChoiceBox monthChoiceBox;
     @FXML
-    ChoiceBox nameChoiceBox;
+    ChoiceBox searchNameChoiceBox;
+    @FXML
+    ChoiceBox addNameChoiceBox;
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="Panes">
+    @FXML
+    AnchorPane addWorkerAnchorPane;
+    @FXML
+    AnchorPane mainAnchorPane;
+//</editor-fold>  
+//<editor-fold defaultstate="collapsed" desc="ProgressIndicator">
+    @FXML
+    ProgressIndicator pi;
 //</editor-fold>
 //</editor-fold>
-    
+
 //<editor-fold defaultstate="collapsed" desc="CHOICE BOXES">
     public void fillChoiceBoxes() {
         setYearChoiceBox();
         setMonthChoiceBox();
-        setNameChoiceBox();
+        setNamesChoiceBoxes();
     }
-    
+
     public void setMonthChoiceBox() {
         ObservableList<String> months = FXCollections.observableArrayList("All", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
         monthChoiceBox.setItems(months);
         monthChoiceBox.setValue("All");
     }
-    
+
     public void setYearChoiceBox() {
         int year = Year.now().getValue();
         ArrayList<String> list = new ArrayList<>();
         list.add("All");
-        
+
         for (int i = 2017; i <= year; i++) {
-            list.add(""+i);
+            list.add("" + i);
         }
         ObservableList<String> years = FXCollections.observableList(list);
-        
+
         yearChoiceBox.setItems(years);
         yearChoiceBox.setValue("All");
     }
-    
-    public void setNameChoiceBox() {
-        ArrayList<String> list = new ArrayList<>();
+
+    public void setNamesChoiceBoxes() {
+        ArrayList<Worker> workers = new ArrayList<>();
+        ArrayList<String> names = new ArrayList<>();
         
-        list = db.getNames();
-        list.add(0, "All");
-        
-        ObservableList<String> names = FXCollections.observableList(list);
-        nameChoiceBox.setItems(names);
-        nameChoiceBox.setValue("All");
-        
+        workers = db.getWorkers();
+
+        for (Worker i : workers) {
+            String tmp = i.getName() + " (" + i.getID() + ")";
+            names.add(tmp);
+        }
+
+        ArrayList<String> searchNames = new ArrayList<>(names);
+        searchNames.add(0, "All");
+        ObservableList<String> search = FXCollections.observableList(searchNames);
+        searchNameChoiceBox.setItems(search);
+        searchNameChoiceBox.getSelectionModel().selectFirst();
+
+        ArrayList<String> addNames = new ArrayList<>(names);
+        addNames.add(0, "");
+        ObservableList<String> add = FXCollections.observableList(addNames);
+        addNameChoiceBox.setItems(add);
+        addNameChoiceBox.getSelectionModel().selectFirst();
     }
 //</editor-fold>
 
-    public void tableColumns() {
+    private void tableColumns() {
         TableColumn date = new TableColumn("Date");
         TableColumn startTime = new TableColumn("Start time");
         TableColumn endTime = new TableColumn("End time");
         TableColumn totalTime = new TableColumn("Worked");
+        TableColumn worker = new TableColumn("Worker");
 
         double datePrefWidth = date.getPrefWidth();
         double startTimePrefWidth = startTime.getPrefWidth();
         double endTimePrefWidth = endTime.getPrefWidth();
         double totalTimePrefWidth = totalTime.getPrefWidth();
+        double workerPrefWidth = worker.getPrefWidth();
 
         date.setMinWidth(datePrefWidth);
         startTime.setMinWidth(startTimePrefWidth);
         endTime.setMinWidth(endTimePrefWidth);
         totalTime.setMinWidth(totalTimePrefWidth);
+        worker.setMinWidth(workerPrefWidth);
 
-        date.setMaxWidth(130);
-        startTime.setMaxWidth(130);
-        endTime.setMaxWidth(130);
-        totalTime.setMaxWidth(130);
+        date.setMaxWidth(100);
+        startTime.setMaxWidth(100);
+        endTime.setMaxWidth(100);
+        totalTime.setMaxWidth(100);
+        worker.setMaxWidth(100);
 
         date.setCellValueFactory(new PropertyValueFactory<>("date"));
         startTime.setCellValueFactory(new PropertyValueFactory<>("startTime"));
         endTime.setCellValueFactory(new PropertyValueFactory<>("endTime"));
         totalTime.setCellValueFactory(new PropertyValueFactory<>("totalTime"));
+        worker.setCellValueFactory(new PropertyValueFactory<>("workerName"));
 
-        table.getColumns().addAll(date, startTime, endTime, totalTime);
-        refreshTableFromDB();
+        table.getColumns().addAll(date, worker, startTime, endTime, totalTime);
+        table.setItems(TVWODataExtended);
+        search();
     }
 
-    public void splitTVWODataToWorkTimeData() {
+    private void WorkTimeToTVWOEFromDB() {
+        TVWODataExtended.clear();
         workTimeData.clear();
 
-        for (TableViewWriteOut tmp : TVWOData) {
-            int sHour, sMinute, eHour, eMinute, tHour, tMinute;
+        ArrayList<WorkTime> works = db.getAllWorkTimes();
+        ArrayList<Worker> workers = db.getWorkers();
 
-            String str = "";
-            String[] array = new String[3];
-
-            str = tmp.getStartTime();
-            array = str.split(":");
-            sHour = Integer.parseInt(array[0]);
-            sMinute = Integer.parseInt(array[1]);
-
-            str = tmp.getEndTime();
-            array = str.split(":");
-            eHour = Integer.parseInt(array[0]);
-            eMinute = Integer.parseInt(array[1]);
-
-            str = tmp.getTotalTime();
-            array = str.split(":");
-            tHour = Integer.parseInt(array[0]);
-            tMinute = Integer.parseInt(array[1]);
-
-            str = tmp.getDate();
-            int year = Integer.parseInt(str.substring(0, 4));
-            int month = Integer.parseInt(str.substring(5, 7));
-            int day = Integer.parseInt(str.substring(8, 10));
-
-            int id = Integer.parseInt(tmp.getId());
-
-            WorkTime wt = new WorkTime(new HourMinute(sHour, sMinute), new HourMinute(eHour, eMinute), new HourMinute(tHour, tMinute), year, month, day, id);
-            workTimeData.add(wt);
+        for (WorkTime i : works) {
+            workTimeData.add(i);
+            for (Worker j : workers) {
+                if (i.getWorkerID() == j.getID()) {
+                    TableViewWriteOutExtended tvwoe = new TableViewWriteOutExtended(i, j.getName());
+                    TVWODataExtended.add(tvwoe);
+                }
+            }
         }
     }
-    
-    // Summs the worked hours shown in table
-    public void calculateTotalWorkedHours() {
+
+    private void WorkTimeToTVWOE() {
+        TVWODataExtended.clear();
+        ArrayList<Worker> workers = db.getWorkers();
+        for (WorkTime i : workTimeData) {
+            workTimeData.add(i);
+            for (Worker j : workers) {
+                if (i.getWorkerID() == j.getID()) {
+                    TableViewWriteOutExtended tvwoe = new TableViewWriteOutExtended(i, j.getName());
+                    TVWODataExtended.add(tvwoe);
+                }
+            }
+        }
+
+    }
+
+    private void WorkTimesFromDB() {
         workTimeData.clear();
-        splitTVWODataToWorkTimeData();
+        ArrayList<WorkTime> works = db.getAllWorkTimes();
+        workTimeData.addAll(works);
+    }
+
+    private void search() {
+        try {
+            int year = 0, month = -999, workerID = -999;
+
+            String yearString = "" + yearChoiceBox.getSelectionModel().getSelectedItem();
+            if (!yearString.equals("All")) {
+                year = Integer.parseInt(yearString);
+            }
+            
+            String idString = "" + searchNameChoiceBox.getSelectionModel().getSelectedItem();
+            if (!idString.equals("All") && (idString.indexOf("(") > 0)) {
+                workerID = Integer.parseInt(idString.substring(idString.indexOf("(") + 1, idString.indexOf(")")));
+            } else {
+                workerID = 0;
+            }
+            
+            month = (Integer) monthChoiceBox.getSelectionModel().getSelectedIndex();
+
+            TVWODataExtended.clear();
+
+            if (year == 0 && month == 0 && workerID == 0) {
+                WorkTimeToTVWOEFromDB();
+            } else {
+                WorkTimesFromDB();
+                ArrayList<WorkTime> tmp = new ArrayList<>();
+                for (WorkTime i : workTimeData) {
+                    if ((i.getYear() == year || year == 0) && (i.getMonth() == month || month == 0) && (i.getWorkerID() == workerID || workerID == 0)) {
+                        TVWODataExtended.add(new TableViewWriteOutExtended(i, db.getWorkerNameByID(i.getWorkerID())));
+                        tmp.add(i);
+                    }
+                }
+                workTimeData.clear();
+                workTimeData.addAll(tmp);
+            }
+            calculateTotalWorkedHours();
+        } catch (NumberFormatException ex) {
+            System.out.println("Problem in \"FXMLDocumentController\" \"search\" method!");
+            System.out.println(ex);
+        }
+    }
+
+    private void calculateTotalWorkedHours() {
 
         int hour = 0, minute = 0;
-        for (WorkTime tmp : workTimeData) {
-            hour += tmp.getTotalHour();
-            minute += tmp.getTotalMinute();
+        for (WorkTime i : workTimeData) {
+            hour += i.getTotalHour();
+            minute += i.getTotalMinute();
         }
 
         while (minute > 59) {
@@ -223,11 +310,11 @@ public class Controller implements Initializable {
             minute -= 60;
         }
 
+        totalLabel.setText(TableViewWriteOutExtended.formatter(hour, minute));
         bonuses();
-        totalLabel.setText(TableViewWriteOut.formatter(hour, minute));
     }
 
-    public void bonuses() {
+    private void bonuses() {
         double normal = 0, extra = 0, bigextra = 0;
         int fridayOrSaturday = 0;
 
@@ -284,21 +371,21 @@ public class Controller implements Initializable {
                     end = i.getEndHour() * 60 + i.getEndMinute();
 
                     if (start >= 1320 && (end >= 1320 || end < 600)) {
-                    if (start < 1320) {
-                        start = 1320;
+                        if (start < 1320) {
+                            start = 1320;
+                        }
+                        if (end < 360) {
+                            end += 1440;
+                        } else {
+                            end = 360 + 1440;
+                        }
+                        if (end - start == 480) {
+                            gotBonus = true;
+                        }
+                        bigextra += end - start;
+
                     }
-                    if (end < 360) {
-                        end += 1440;
-                    } else {
-                        end = 360 + 1440;
-                    }
-                    if (end - start == 480) {
-                        gotBonus = true;
-                    }
-                    bigextra += end - start;
-                    
-                    }
-                    
+
                     if (gotBonus && (dayOfWeek.equals("Friday") || dayOfWeek.equals("Saturday"))) {
                         fridayOrSaturday++;
                     }
@@ -328,7 +415,7 @@ public class Controller implements Initializable {
             normalSalary = salary;
             extraSalary = salary * 1.3;
             bigextraSalary = salary * 1.4;
-            
+
             double normalam = normal * normalSalary;
             double extraam = extra * extraSalary;
             double bigextraam = bigextra * bigextraSalary;
@@ -341,17 +428,18 @@ public class Controller implements Initializable {
                 netam *= 0.983;
             }
 
-            normalam = BigDecimal.valueOf(normalam).setScale(0, RoundingMode.HALF_UP).doubleValue();
-            extraam = BigDecimal.valueOf(extraam).setScale(0, RoundingMode.HALF_UP).doubleValue();
-            bigextraam = BigDecimal.valueOf(bigextraam).setScale(0, RoundingMode.HALF_UP).doubleValue();
-            totalamm = BigDecimal.valueOf(totalamm).setScale(0, RoundingMode.HALF_UP).doubleValue();
-            netam = BigDecimal.valueOf(netam).setScale(0, RoundingMode.HALF_UP).doubleValue();
+            
+            int normalamInt = keepTheChange((int) normalam);
+            int extraamInt = keepTheChange((int) extraam);
+            int bigextraamInt = keepTheChange((int) bigextraam);
+            int totalammInt = keepTheChange((int) totalamm);
+            int netamInt = keepTheChange((int) netam);
 
-            String i1 = "" + normalam;
-            String i2 = "" + extraam;
-            String i3 = "" + bigextraam;
-            String i4 = "" + totalamm;
-            String i5 = "" + netam;
+            String i1 = "" + normalamInt;
+            String i2 = "" + extraamInt;
+            String i3 = "" + bigextraamInt;
+            String i4 = "" + totalammInt;
+            String i5 = "" + netamInt;
 
             normalAmount.setText(i1);
             extraAmount.setText(i2);
@@ -360,63 +448,85 @@ public class Controller implements Initializable {
             net.setText(i5);
         }
     }
-    
-    public void refreshTableFromDB() {
-        TVWOData.clear();
-        TVWOData.addAll(db.getAllTVWO());
-        splitTVWODataToWorkTimeData();
-        table.setItems(TVWOData);
-        search();
-        calculateTotalWorkedHours();
+
+    private void calculateNormal() {
+        
     }
     
-    private void search() {
-        Boolean t = false;
+    private void calculateExtra() {
+        
+    }
+    
+    private void calculateBigExtra() {
+        
+    }
+    
+    private int keepTheChange(int amount) {
+        HashSet<Integer> smallerSide = new HashSet<>();
+        smallerSide.add(1);
+        smallerSide.add(2);
+        smallerSide.add(3);
+        smallerSide.add(4);
 
-        int year, month;
-        year = (Integer) yearChoiceBox.getSelectionModel().getSelectedIndex();
-        month = (Integer) monthChoiceBox.getSelectionModel().getSelectedIndex();
+        HashSet<Integer> biggerSide = new HashSet<>();
+        biggerSide.add(6);
+        biggerSide.add(7);
+        biggerSide.add(8);
+        biggerSide.add(9);
 
-        if (year != 0) {
-            year += 2016;
+        if (smallerSide.contains(amount % 10)) {
+            amount -= amount % 10;
+        } else if (biggerSide.contains(amount % 10)) {
+            amount += (10 - (amount % 10));
         }
 
-        try {
-            TVWOData.clear();
-            if (year == 0 && month == 0) {
-                TVWOData.addAll(db.getAllTVWO());
-            } else {
-                ObservableList<WorkTime> tempWorkTimeData = FXCollections.observableArrayList();
-                tempWorkTimeData.addAll(db.getAllWorkWorkTime());
-                for (WorkTime tmp : tempWorkTimeData) {
-                    if (tmp.getYear() == year && tmp.getMonth() == month) {
-                        TVWOData.add(new TableViewWriteOut(tmp));
-                    } else if (tmp.getYear() == year && month == 0) {
-                        TVWOData.add(new TableViewWriteOut(tmp));
-                    } else if (year == 0 && tmp.getMonth() == month) {
-                        TVWOData.add(new TableViewWriteOut(tmp));
-                    }
-                }
-            }
+        return amount;
+    }
 
-            calculateTotalWorkedHours();
-        } catch (Exception ex) {
-            System.out.println("Problem in \"FXMLDocumentController\" \"searchButton\" method!");
-            System.out.println(ex);
-        }
+    private void refreshTableFromDB() {
+        WorkTimeToTVWOEFromDB();
+        table.setItems(TVWODataExtended);
+        search();
+    }
+
+//<editor-fold defaultstate="collapsed" desc="Buttons">
+    @FXML
+    private void openAddNewWorkerButton(ActionEvent event) {
+        mainAnchorPane.setOpacity(0.3);
+        mainAnchorPane.setDisable(true);
+        addWorkerAnchorPane.setVisible(true);
     }
     
     @FXML
-    public void addButton(ActionEvent event) {
+    private void addNewWorkerButton(ActionEvent event) {
+        String name = workerNameTextField.getText();
+        workerNameTextField.setText("");
+        db.addWorker(name);
+        addWorkerAnchorPane.setVisible(false);
+        mainAnchorPane.setOpacity(1);
+        mainAnchorPane.setDisable(false);
+        
+        setNamesChoiceBoxes();
+    }
+    
+    @FXML
+    private void cancelNewWorkerButton(ActionEvent event) {
+        addWorkerAnchorPane.setVisible(false);
+        mainAnchorPane.setOpacity(1);
+        mainAnchorPane.setDisable(false);
+    }
+    
+    @FXML
+    private void addButton(ActionEvent event) {
         try {
             Boolean t = false;
             int startHour = 0, endHour = 0, startMinute = 0, endMinute = 0;
-
+            
             startHour = Integer.parseInt(startHourInput.getText());
             endHour = Integer.parseInt(endHourInput.getText());
             startMinute = Integer.parseInt(startMinuteInput.getText());
             endMinute = Integer.parseInt(endMinuteInput.getText());
-
+            
             if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23 || startMinute < 0 || startMinute > 59 || endMinute < 0 || endMinute > 59) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Problem!");
@@ -424,19 +534,21 @@ public class Controller implements Initializable {
                 alert.setContentText("Bad interval!");
                 alert.showAndWait();
             } else {
-
+                
                 HourMinute startTMP = new HourMinute(startHour, startMinute);
                 HourMinute endTMP = new HourMinute(endHour, endMinute);
-                HourMinute totalTMP = DB.calcTotal(startTMP, endTMP);
+                HourMinute totalTMP = CalcTotal.calcTotal(startTMP, endTMP);
                 LocalDate ld = datePicker.getValue();
-
-                WorkTime workTMP = new WorkTime(startTMP, endTMP, totalTMP, ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth(), -1);
-
-                db.addWork(workTMP);
                 
-                refreshTableFromDB();
+                String choiceBoxName = (String) addNameChoiceBox.getSelectionModel().getSelectedItem();
+                int workerid = Integer.parseInt(choiceBoxName.substring(choiceBoxName.indexOf("(") + 1, choiceBoxName.indexOf(")")));
+                
+                WorkTime workTime = new WorkTime(startTMP, endTMP, totalTMP, ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth(), -1, workerid);
+                db.addWork(workTime);
+                
+                search();
             }
-
+            
         } catch (Exception ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Problem!");
@@ -448,19 +560,18 @@ public class Controller implements Initializable {
     
     @FXML
     private void deleteButton(ActionEvent event) {
-
         if (table.getSelectionModel().getSelectedIndex() != -1) {
-        TableViewWriteOut selectedTVWO = (TableViewWriteOut) table.getSelectionModel().getSelectedItem();
-         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            TableViewWriteOutExtended selectedTVWO = (TableViewWriteOutExtended) table.getSelectionModel().getSelectedItem();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Confirmation");
             alert.setHeaderText("You are about to delete a record!");
             alert.setContentText("Are you sure about deleting the selected record?");
-
+            
             Optional<ButtonType> result = alert.showAndWait();
-
+            
             if (result.get() == ButtonType.OK) {
                 db.deleteFromTable("worktime", Integer.parseInt(selectedTVWO.getId()));
-                refreshTableFromDB();
+                search();
                 calculateTotalWorkedHours();
             }
         } else {
@@ -469,15 +580,15 @@ public class Controller implements Initializable {
             alert.setHeaderText(null);
             alert.setContentText("You did not choose any data!");
             alert.showAndWait();
-        } 
+        }
     }
-
+//</editor-fold>
+    
     @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        datePicker.setValue(LocalDate.now());
-        tableColumns();
+    public void initialize(URL url, ResourceBundle rb) {        
+        datePicker.setValue(LocalDate.now());        
         fillChoiceBoxes();
-        refreshTableFromDB();
+        tableColumns();
         
         yearChoiceBox.setOnAction((event) -> {
             search();
@@ -485,59 +596,97 @@ public class Controller implements Initializable {
         monthChoiceBox.setOnAction((event) -> {
             search();
         });
-        
+        searchNameChoiceBox.setOnAction((event) -> {
+            search();
+        });
+//<editor-fold defaultstate="collapsed" desc="Stuff">
         wageHourly.textProperty().addListener((observable, oldValue, newValue) -> {
-            String tmp = wageHourly.getText();            
-            if(tmp.equals("")) wageHourly.setText("0");
+            String tmp = wageHourly.getText();
+            if (tmp.equals("")) {
+                wageHourly.setText("0");
+            }
             calculateTotalWorkedHours();
         });
-        
+
+        InputStream input = getClass().getResourceAsStream("/images/plus.png");
+        Image image = new Image(input);
+        ImageView imageView = new ImageView(image);
+        addButton.setGraphic(imageView);
+
+        InputStream input2 = getClass().getResourceAsStream("/images/delete.png");
+        Image image2 = new Image(input2);
+        ImageView imageView2 = new ImageView(image2);
+        deleteButton.setGraphic(imageView2);
+
+        /*
+DropShadow shadow = new DropShadow();
+addButton.addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
+    @Override
+    public void handle(MouseEvent e) {
+        addButton.setEffect(shadow);
+    }
+});
+addButton.addEventHandler(MouseEvent.MOUSE_EXITED, new EventHandler<MouseEvent>() {
+    @Override
+    public void handle(MouseEvent e) {
+        addButton.setEffect(null);
+    }
+});
+
+deleteButton.addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
+    @Override
+    public void handle(MouseEvent e) {
+        deleteButton.setEffect(shadow);
+    }
+});
+deleteButton.addEventHandler(MouseEvent.MOUSE_EXITED, new EventHandler<MouseEvent>() {
+    @Override
+    public void handle(MouseEvent e) {
+        deleteButton.setEffect(null);
+    }
+});*/
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="TEXT FIELDS ONLY NUMBERS (TEXT PROPERTIES)">
-startHourInput.textProperty().addListener(new ChangeListener<String>() {
-    @Override
-    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        
-        if (!newValue.matches("\\d*")) {
-            startHourInput.setText(newValue.replaceAll("[^\\d]", ""));
-        }
-    }
-});
-startMinuteInput.textProperty().addListener(new ChangeListener<String>() {
-    @Override
-    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        
-        if (!newValue.matches("\\d*")) {
-            startMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
-        }
-    }
-});
-endHourInput.textProperty().addListener(new ChangeListener<String>() {
-    @Override
-    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        
-        if (!newValue.matches("\\d*")) {
-            endHourInput.setText(newValue.replaceAll("[^\\d]", ""));
-        }
-    }
-});
-endMinuteInput.textProperty().addListener(new ChangeListener<String>() {
-    @Override
-    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        
-        if (!newValue.matches("\\d*")) {
-            endMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
-        }
-    }
-});
-wageHourly.textProperty().addListener(new ChangeListener<String>() {
-    @Override
-    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        
-        if (!newValue.matches("\\d*")) {
-            wageHourly.setText(newValue.replaceAll("[^\\d]", ""));
-        }
-    }
-});
+        startHourInput.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    startHourInput.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+        startMinuteInput.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    startMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+        endHourInput.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    endHourInput.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+        endMinuteInput.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    endMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+        wageHourly.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    wageHourly.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
 //</editor-fold>
 
     }

@@ -1,6 +1,6 @@
 package workschedulehandler;
 
-//<editor-fold defaultstate="collapsed" desc="IMPORTS">
+import interfaces.DBInterface;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -9,62 +9,33 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-//</editor-fold>
 
 
-public class DB {
+public class DB implements DBInterface{
     final String JDBC_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
-    final String URL = "jdbc:derby:WorkDB;create=true";
+    final String URL = "jdbc:derby:WorkDB3;create=true";
 
     Connection conn = null;
     DatabaseMetaData dbmd = null;
     Statement statement = null;
-
+    
     public DB() {
         try {
             conn = DriverManager.getConnection(URL);
         } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"conn = DriverManager.getConnection(URL);\" failed): " + ex);
+            System.out.println("SQLException in class \"DB\" (constructor):\n" + ex);
         }
 
-        if (conn != null) {
-            try {
-                statement = conn.createStatement();
-            } catch (SQLException ex) {
-                System.out.println("SQLException in class \"DB\" (\"statement = conn.createStatement();\" failed): " + ex);
-            }
+        try {
+            statement = conn.createStatement();
+        } catch (Exception ex) {
+            System.out.println("Exception in DB class --  statement = conn.createStatement(); " + ex);
         }
-
         try {
             dbmd = conn.getMetaData();
-        } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"dbmd = conn.getMetaData();\" failed): " + ex);
+        } catch (Exception ex) {
+            System.out.println("Exception in DB class -- dbmd = conn.getMetaData(); " + ex);
         }
-
-        try {
-            ResultSet rs = dbmd.getTables(null, "APP", "WORKTIME", null);
-            if (!rs.next()) {
-                String sql = "create table worktime (id INT not null primary key GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), "
-                        + "starthour int, endhour int, startminute int, endminute int, y3ar int, month int, day int)";
-                statement.execute(sql);
-            }
-        } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"ResultSet/Creating table ('''''worktime''''') \" failed): " + ex);
-        }
-
-        try {
-            ResultSet rs = dbmd.getTables(null, "APP", "WORKTIME", null);
-            if (!rs.next()) {
-                String sql = "create table worktime2 (id INT not null primary key GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), "
-                        + "starthour int, endhour int, startminute int, endminute int, y3ar int, month int, day int, workerid int FOREIGN KEY REFERENCES names(id)";
-                statement.execute(sql);
-            }
-        } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"ResultSet/Creating table ('''''worktime''''') \" failed): " + ex);
-        }
-
 
         try {
             ResultSet rs = dbmd.getTables(null, "APP", "NAMES", null);
@@ -76,19 +47,42 @@ public class DB {
         } catch (SQLException ex) {
             System.out.println("SQLException in class \"DB\" (\"ResultSet/Creating table ('''''names''''') \" failed): " + ex);
         }
+
+        try {
+            ResultSet rs = dbmd.getTables(null, "APP", "WORKTIME", null);
+            if (!rs.next()) {
+                String sql = "create table worktime (id INT not null primary key GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), "
+                        + "starthour int, endhour int, startminute int, endminute int, y3ar int, month int, day int, workerid int FOREIGN KEY REFERENCES names(id))";
+                statement.execute(sql);
+            }
+        } catch (SQLException ex) {
+            System.out.println("SQLException in class \"DB\" (\"ResultSet/Creating table ('''''worktime''''') \" failed): " + ex);
+        }
+
+
     }
     
-    public void dropTable(String tableName) {
+    @Override
+    public void addWork(WorkTime workTime) {
         try {
-            String sql = "DROP TABLE " + tableName;
+            String sql = "insert into worktime (starthour, endhour, startminute, endminute, y3ar, month, day, workerid) values(?,?,?,?,?,?,?,?)";
             PreparedStatement ppst = conn.prepareStatement(sql);
+            ppst.setInt(1, workTime.getStartHour());
+            ppst.setInt(2, workTime.getEndHour());
+            ppst.setInt(3, workTime.getStartMinute());
+            ppst.setInt(4, workTime.getEndMinute());
+            ppst.setInt(5, workTime.getYear());
+            ppst.setInt(6, workTime.getMonth());
+            ppst.setInt(7, workTime.getDay());
+            ppst.setInt(8, workTime.getWorkerID());
             ppst.execute();
+
         } catch (SQLException ex) {
-            Logger.getLogger(DB.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("SQLException in class \"DB\" (\"addWork(WorkTime workTime)\"): " + ex);
         }
     }
 
-//<editor-fold defaultstate="collapsed" desc="ADDERS">
+    @Override
     public void addWorker(String name) {
         try {
             String sql = "insert into names (name) values (?)";
@@ -100,38 +94,94 @@ public class DB {
         }
     }
 
-    public void addWork(WorkTime workTime) {
+    @Override
+    public ArrayList<WorkTime> getAllWorkTimes() {
+        String sql = "select * from worktime";
+        ArrayList<WorkTime> list = null;
         try {
-            String sql = "insert into worktime (starthour, endhour, startminute, endminute, y3ar, month, day) values(?,?,?,?,?,?,?)";
-            PreparedStatement ppst = conn.prepareStatement(sql);
-            ppst.setInt(1, workTime.getStartHour());
-            ppst.setInt(2, workTime.getEndHour());
-            ppst.setInt(3, workTime.getStartMinute());
-            ppst.setInt(4, workTime.getEndMinute());
-            ppst.setInt(5, workTime.getYear());
-            ppst.setInt(6, workTime.getMonth());
-            ppst.setInt(7, workTime.getDay());
-            ppst.execute();
+            ResultSet rs = statement.executeQuery(sql);
+            list = new ArrayList<>();
+            while (rs.next()) {
+                int id = rs.getInt("id");
 
-        } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"addWork(WorkTime workTime)\"): " + ex);
-        }
-    }
-//</editor-fold>
+                HourMinute start = new HourMinute(rs.getInt("starthour"), rs.getInt("startminute"));
+                HourMinute end = new HourMinute(rs.getInt("endhour"), rs.getInt("endminute"));
+                HourMinute total = CalcTotal.calcTotal(start, end);
+                int year = rs.getInt("y3ar");
+                int month = rs.getInt("month");
+                int day = rs.getInt("day");
+                int workerid = rs.getInt("workerid");
 
-//<editor-fold defaultstate="collapsed" desc="DELETERS">
-    public void deleteTable(String tableName) {
-        try {
-            String sql = "DELETE * FROM " + tableName;
-            PreparedStatement ppst = conn.prepareStatement(sql);
-            ppst.execute();
+                WorkTime tmp = new WorkTime(start, end, total, year, month, day, id, workerid);
+                list.add(tmp);
+            }
         } catch (SQLException ex) {
-            Logger.getLogger(DB.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("SQLException in class \"DB\" (\"getWorkTimes() failed\"): " + ex);
         }
+        return list;
     }
     
-    public void deleteFromTable(String tableName, int ID) {
+    @Override
+    public ArrayList<Worker> getWorkers() {
+        ArrayList<Worker> workers = new ArrayList<>();
+        String sql = "select * from names";
+
         try {
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String name = rs.getString("name");
+                workers.add(new Worker(id, name));
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception in class \"DB\" (\" public ArrayList<Worker> getWorkers()\" failed): " + ex);
+        }
+        return workers;
+    }
+
+    @Override
+    public WorkTime getWorkByID(int id) {
+        WorkTime tmp = null;
+        try {
+            String sql = "select * from worktime where id = " + id;
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                HourMinute start = new HourMinute(rs.getInt("starthour"), rs.getInt("startminute"));
+                HourMinute end = new HourMinute(rs.getInt("endhour"), rs.getInt("endminute"));
+                HourMinute total = CalcTotal.calcTotal(start, end);
+                int year = rs.getInt("y3ar");
+                int month = rs.getInt("month");
+                int day = rs.getInt("day");
+                int workerid = rs.getInt("workerid");
+
+                tmp = new WorkTime(start, end, total, year, month, day, id, workerid);
+            }
+
+        } catch (Exception ex) {
+            System.out.println("SQLException in class \"DB\" (\"getWorkers() failed\"): " + ex);
+        }
+
+        return tmp;
+    }
+
+    @Override
+    public String getWorkerNameByID(int workerid) {
+        String sql = "select * from names";
+        try {
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                if (workerid == id) return rs.getString("name");
+            }
+        } catch (SQLException ex) {
+             System.out.println("SQLException in class \"DB\" (\"public String getWorkerNameByID(int workerid)\" failed): " + ex);
+        }        
+        return "No worker with this ID...";
+    }
+
+    @Override
+    public void deleteFromTable(String tableName, int ID) {
+         try {
             String sql = "DELETE FROM " + tableName + " WHERE ID = ?";
             PreparedStatement ppst = conn.prepareStatement(sql);
             ppst.setInt(1, ID);
@@ -141,106 +191,46 @@ public class DB {
         }
     }
     
-    public void deleteWork(int ID) {
-        try {
-            String sql = "delete from worktime where id = ?";
+    public void deleteFromTable2() {
+         try {
+            String sql = "DELETE FROM names WHERE ID > 5";
             PreparedStatement ppst = conn.prepareStatement(sql);
-            ppst.setInt(1, ID);
             ppst.execute();
         } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"deleteAnimal(int ID) failed\"): " + ex);
+            System.out.println("SQLException in class \"DB\" (\"deleteFromTable(String tableName, int ID) failed\"): " + ex);            
         }
     }
-//</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc="GETTERS">
-    public ArrayList<String> getNames() {
+    @Override
+    public ArrayList<String> getAllNames() {
         ArrayList<String> names = new ArrayList<>();
         String sql = "select * from names";
-        
         try {
             ResultSet rs = statement.executeQuery(sql);
-            names = new ArrayList<>();
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                names.add(name);
+                names.add(rs.getString("name"));
             }
-        } catch (Exception ex) {
-            
+        } catch (SQLException ex) {
+            System.out.println("SQLException in class \"DB\" (\"ArrayList<String> getAllNames() failed\"): " + ex);
         }
         return names;
     }
-    public ArrayList<TableViewWriteOut> getAllTVWO() {
-        
-        String sql = "select * from worktime";
-        ArrayList<TableViewWriteOut> list = null;
+
+    @Override
+    public ArrayList<Worker> getAllWorkers() {
+        ArrayList<Worker> workers = new ArrayList<>();
+        String sql = "select * from names";
         try {
             ResultSet rs = statement.executeQuery(sql);
-            list = new ArrayList<>();
             while (rs.next()) {
+                String name = rs.getString("name");
                 int id = rs.getInt("id");
-                
-                HourMinute start = new HourMinute(rs.getInt("starthour"), rs.getInt("startminute"));
-                HourMinute end = new HourMinute(rs.getInt("endhour"), rs.getInt("endminute"));
-                HourMinute total = calcTotal(start, end);
-                
-                int year = rs.getInt("y3ar");
-                int month = rs.getInt("month");
-                int day = rs.getInt("day");
-                
-                WorkTime tmp = new WorkTime(start, end, total, year, month, day, id);
-                TableViewWriteOut tbwo = new TableViewWriteOut(tmp);
-                list.add(tbwo);
+                workers.add(new Worker(id, name));
             }
         } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"getAllWork() failed\"): " + ex);
+            System.out.println("SQLException in class \"DB\" (\"ArrayList<Worker> getAllWorkers() failed\"): " + ex);
         }
         
-        return list;
-    }
-    public ArrayList<WorkTime> getAllWorkWorkTime() {
-        String sql = "select * from worktime";
-        ArrayList<WorkTime> list = null;
-        try {
-            ResultSet rs = statement.executeQuery(sql);
-            list = new ArrayList<>();
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                
-                HourMinute start = new HourMinute(rs.getInt("starthour"), rs.getInt("startminute"));
-                HourMinute end = new HourMinute(rs.getInt("endhour"), rs.getInt("endminute"));
-                HourMinute total = calcTotal(start, end);
-                int year = rs.getInt("y3ar");
-                int month = rs.getInt("month");
-                int day = rs.getInt("day");
-                
-                WorkTime tmp = new WorkTime(start, end, total, year, month, day, id);
-                list.add(tmp);
-            }
-        } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"getAllWork() failed\"): " + ex);
-        }
-        return list;
-    }
-//</editor-fold>
-
-    public static HourMinute calcTotal(HourMinute start, HourMinute end) {
-        int startHour = start.getHour();
-        int endHour = end.getHour();
-        
-        int hourTotal = 0, minuteTotal = 0;
-        
-        if (endHour < startHour) endHour += 24;
-        hourTotal = endHour - startHour;
-        minuteTotal = end.getMinute() - start.getMinute();
-
-        if (minuteTotal < 0) {
-            hourTotal--;
-            minuteTotal += 60;
-        }
-        HourMinute total = new HourMinute(hourTotal, minuteTotal);
-
-        return total;
+        return workers;
     }
 }

@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="800.0" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="workschedulehandler.Controller">
+         <children>
+      <AnchorPane fx:id="mainAnchorPane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+                  <MenuBar prefWidth="700.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <menus>
+                      <Menu mnemonicParsing="false" text="File">
+                        <items>
+                          <MenuItem mnemonicParsing="false" text="Add" />
+                        <MenuItem mnemonicParsing="false" text="Delete" />
+                        </items>
+                      </Menu>
+                      <Menu mnemonicParsing="false" text="Edit">
+                        <items>
+                          <MenuItem mnemonicParsing="false" text="Delete" />
+                        </items>
+                      </Menu>
+                      <Menu mnemonicParsing="false" text="Help">
+                        <items>
+                          <MenuItem mnemonicParsing="false" text="About" />
+                        </items>
+                      </Menu>
+                    </menus>
+                  </MenuBar>
+                  <Separator prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0" />
+                  <Pane prefHeight="398.0" prefWidth="698.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
+                     <children>
+                        <SplitPane dividerPositions="0.25" layoutX="5.0" layoutY="5.0" prefHeight="480.0" prefWidth="800.0">
+                          <items>
+                            <AnchorPane minHeight="0.0" minWidth="180.0" prefHeight="160.0" prefWidth="100.0">
+                                 <children>
+                                    <VBox alignment="TOP_CENTER" prefHeight="323.0" prefWidth="205.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0">
+                                       <children>
+                                          <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0">
+                                             <children>
+                                                <ChoiceBox fx:id="addNameChoiceBox" prefWidth="175.0" stylesheets="@../css/choicebox.css" />
+                                             </children>
+                                          </HBox>
+                                          <HBox alignment="TOP_CENTER" spacing="5.0">
+                                             <children>
+                                                <VBox layoutX="34.0" layoutY="78.0" spacing="10.0">
+                                                   <children>
+                                                      <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="28.0" layoutY="594.0" maxWidth="50.0" text="Date:">
+                                                         <font>
+                                                            <Font size="18.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="38.0" layoutY="604.0" maxWidth="50.0" text="Start:">
+                                                         <font>
+                                                            <Font size="18.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="22.0" layoutY="644.0" maxWidth="50.0" text="End:">
+                                                         <font>
+                                                            <Font size="18.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </VBox>
+                                                <VBox layoutX="93.0" layoutY="83.0" spacing="5.0">
+                                                   <children>
+                                                      <DatePicker id="date" fx:id="datePicker" layoutX="93.0" layoutY="66.0" maxWidth="134.0" prefHeight="27.0" prefWidth="125.0" />
+                                                      <HBox layoutX="93.0" layoutY="109.0" spacing="10.0">
+                                                         <children>
+                                                            <VBox layoutX="93.0" layoutY="109.0" spacing="2.0">
+                                                               <children>
+                                                                  <TextField id="startHourInput" fx:id="startHourInput" layoutX="93.0" layoutY="109.0" maxWidth="45.0" nodeOrientation="RIGHT_TO_LEFT" text="8" />
+                                                                  <TextField id="endHourInput" fx:id="endHourInput" layoutX="93.0" layoutY="134.0" maxWidth="45.0" nodeOrientation="RIGHT_TO_LEFT" text="16" />
+                                                               </children>
+                                                            </VBox>
+                                                            <VBox layoutX="134.0" layoutY="109.0" spacing="2.0">
+                                                               <children>
+                                                                  <TextField id="startMinuteInput" fx:id="startMinuteInput" layoutX="134.0" layoutY="109.0" maxWidth="45.0" nodeOrientation="RIGHT_TO_LEFT" text="00" />
+                                                                  <TextField id="endMinuteInput" fx:id="endMinuteInput" layoutX="134.0" layoutY="134.0" maxWidth="45.0" nodeOrientation="RIGHT_TO_LEFT" text="00" />
+                                                               </children>
+                                                            </VBox>
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </VBox>
+                                             </children>
+                                          </HBox>
+                                          <VBox alignment="TOP_CENTER" spacing="20.0">
+                                             <children>
+                                                <Button id="addButton" fx:id="addButton" layoutX="238.0" layoutY="364.0" mnemonicParsing="false" onAction="#addButton" prefHeight="25.0" prefWidth="150.0" text="Add" />
+                                                <Separator prefHeight="10.0" prefWidth="200.0" />
+                                                <Button id="deleteButton" fx:id="deleteButton" layoutX="265.0" layoutY="418.0" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="150.0" text="Delete selected" />
+                                             </children>
+                                          </VBox>
+                                          <Separator prefWidth="200.0">
+                                             <VBox.margin>
+                                                <Insets top="15.0" />
+                                             </VBox.margin>
+                                          </Separator>
+                                          <VBox alignment="CENTER" spacing="5.0">
+                                             <children>
+                                                <ChoiceBox fx:id="searchNameChoiceBox" prefWidth="168.0" stylesheets="@../css/choicebox.css" />
+                                                <HBox alignment="CENTER" spacing="10.0">
+                                                   <children>
+                                                      <VBox layoutX="536.0" layoutY="826.0">
+                                                         <children>
+                                                            <Label alignment="CENTER_RIGHT" layoutX="493.0" layoutY="813.0" maxWidth="1.7976931348623157E308" text="Year:">
+                                                               <font>
+                                                                  <Font size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label alignment="CENTER_RIGHT" layoutX="598.0" layoutY="813.0" maxWidth="1.7976931348623157E308" text="Month:">
+                                                               <font>
+                                                                  <Font size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </VBox>
+                                                      <VBox spacing="5.0">
+                                                         <children>
+                                                            <ChoiceBox id="yearChoiceBox" fx:id="yearChoiceBox" layoutX="597.0" layoutY="856.0" prefWidth="100.0" stylesheets="@../css/choicebox.css" />
+                                                            <ChoiceBox id="monthChoiceBox" fx:id="monthChoiceBox" layoutX="597.0" layoutY="884.0" prefWidth="100.0" stylesheets="@../css/choicebox.css" />
+                                                         </children>
+                                                      </VBox>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <Separator layoutX="10.0" layoutY="227.0" />
+                                          <VBox alignment="TOP_CENTER" prefHeight="323.0" prefWidth="205.0" spacing="10.0">
+                                             <children>
+                                                <Button fx:id="openAddNewWorkerButton" mnemonicParsing="false" onAction="#openAddNewWorkerButton" text="Add new worker" />
+                                             </children>
+                                    </VBox>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </AnchorPane>
+                            <AnchorPane minHeight="0.0" minWidth="500.0" prefHeight="160.0" prefWidth="100.0">
+                                 <children>
+                                    <SplitPane dividerPositions="0.8" layoutX="25.0" layoutY="57.0" orientation="VERTICAL" prefHeight="365.0" prefWidth="415.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                      <items>
+                                        <AnchorPane minHeight="300.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                             <children>
+                                                <TableView id="table" fx:id="table" layoutX="29.0" layoutY="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                             </children>
+                                          </AnchorPane>
+                                        <AnchorPane minHeight="70.0" minWidth="0.0" prefHeight="70.0" prefWidth="160.0">
+                                             <children>
+                                                <HBox alignment="CENTER" prefHeight="106.0" prefWidth="412.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0">
+                                                   <children>
+                                                      <HBox alignment="CENTER" spacing="10.0">
+                                                         <children>
+                                                            <VBox>
+                                                               <children>
+                                                                  <Label alignment="CENTER_RIGHT" layoutX="10.0" layoutY="10.0" maxWidth="1.7976931348623157E308" text="Wage (hourly):">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="Total worked:">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="NS Bonus (22-06):">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </VBox>
+                                                            <VBox>
+                                                               <children>
+                                                                  <TextField id="wageHourly" fx:id="wageHourly" alignment="CENTER" maxWidth="60.0" text="0" />
+                                                                  <Label id="totalLabel" fx:id="totalLabel" alignment="CENTER" maxWidth="1.7976931348623157E308" text="00:00">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label id="bonusLabel" fx:id="bonusLabel" alignment="CENTER" maxWidth="1.7976931348623157E308" text="0">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </VBox>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" spacing="10.0">
+                                                         <children>
+                                                            <VBox alignment="TOP_RIGHT">
+                                                               <children>
+                                                                  <Label contentDisplay="RIGHT" layoutX="840.0" layoutY="789.0" text="06-18   (+0%):">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label layoutX="840.0" layoutY="806.0" text="18-22 (+30%):">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label layoutX="840.0" layoutY="826.0" text="22-06 (+40%):">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </VBox>
+                                                            <VBox>
+                                                               <children>
+                                                                  <Label id="normalHoursLabel" fx:id="normalHoursLabel" layoutX="881.0" layoutY="790.0" text="00:00">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label id="extraHoursLabel" fx:id="extraHoursLabel" layoutX="881.0" layoutY="806.0" text="00:00">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label id="bigextraHoursLabel" fx:id="bigextraHoursLabel" layoutX="881.0" layoutY="826.0" text="00:00">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </VBox>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="619.0" layoutY="775.0" spacing="5.0">
+                                                         <children>
+                                                            <VBox>
+                                                               <children>
+                                                                  <Label id="normalAmount" fx:id="normalAmount" layoutX="930.0" layoutY="790.0" text="normal">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label id="extraAmount" fx:id="extraAmount" layoutX="930.0" layoutY="806.0" text="extra">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label id="bigextraAmount" fx:id="bigextraAmount" layoutX="930.0" layoutY="826.0" text="bigextra">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </VBox>
+                                                            <VBox>
+                                                               <children>
+                                                                  <Label id="totalam" fx:id="totalam1" text="Gross/Net:">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label id="totalam" fx:id="totalam" layoutX="915.0" layoutY="804.0" text="Gross">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label id="net" fx:id="net" layoutX="915.0" layoutY="836.0" text="Net">
+                                                                     <font>
+                                                                        <Font size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </VBox>
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </AnchorPane>
+                                      </items>
+                                    </SplitPane>
+                                 </children>
+                              </AnchorPane>
+                          </items>
+                        </SplitPane>
+                     </children>
+                  </Pane>
+         </children>
+      </AnchorPane>
+            <AnchorPane fx:id="addWorkerAnchorPane" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="100.0">
+               <children>
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#77300d" height="300.0" stroke="BLACK" strokeType="INSIDE" width="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <VBox alignment="CENTER_RIGHT" prefHeight="200.0" prefWidth="100.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <HBox alignment="CENTER" spacing="20.0">
+                           <children>
+                              <Label text="Name:">
+                                 <font>
+                                    <Font size="24.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="workerNameTextField" prefWidth="200.0" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="20.0">
+                           <children>
+                              <Button fx:id="addNewWorkerButton" mnemonicParsing="false" onAction="#addNewWorkerButton" prefWidth="100.0" text="Add" />
+                              <Button fx:id="cancelNewWorkerButton" mnemonicParsing="false" onAction="#cancelNewWorkerButton" prefWidth="100.0" text="Cancel" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </AnchorPane>
+      <ProgressIndicator fx:id="pi" progress="0.0" visible="false" AnchorPane.bottomAnchor="120.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="120.0" />
+         </children></AnchorPane>

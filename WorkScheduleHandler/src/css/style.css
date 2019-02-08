@@ -1,0 +1,26 @@
+*{
+    background-color-dark: #77300d;
+    /*background-color-light:a34313*/
+    background-color-light: linear-gradient(to right, #3f2416, #e5723b);
+
+
+        /*
+        linear-gradient(from 0% 93% to 0% 100%, #a34313 0%, #903b12 100%),
+        #9d4024,
+        #d86e3a,
+        radial-gradient(center 50% 50%, radius 100%, #d86e3a, #c54e2c);*/
+}
+.root {
+    -fx-background-color: background-color-light;
+}
+
+.split-pane {
+    -fx-background-color: background-color-light;
+}
+
+.menu-bar {
+    -fx-background-color: background-color-light;
+}
+
+
+

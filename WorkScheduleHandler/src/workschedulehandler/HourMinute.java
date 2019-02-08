@@ -1,4 +1,3 @@
-
 package workschedulehandler;
 
 public class HourMinute {
@@ -31,6 +30,7 @@ public class HourMinute {
         this.hour = hour;
     }
     
+    @Override
     public String toString() {
         if (hour < 10 && minute < 10) {
             return "0" + hour + ":0" + minute;

@@ -11,19 +11,7 @@ public class WorkTime {
     private int month;
     private int day;
     private int id;
-    
-   /* public WorkTime(HourMinute start, HourMinute end, HourMinute total) {
-        this.startHour = start.getHour();
-        this.startMinute = start.getMinute();
-        this.endHour = end.getHour();
-        this.endMinute = end.getMinute();
-        this.totalHour = total.getHour();
-        this.totalMinute = total.getMinute();
-        this.year = -1000;
-        this.month = -1000;
-        this.day = -1000;
-        this.id = -1000;
-    }*/
+    private int workerID;
 
     public WorkTime(HourMinute start, HourMinute end, HourMinute total, int year, int month, int day, int id) {
         this.startHour = start.getHour();
@@ -37,12 +25,26 @@ public class WorkTime {
         this.day = day;
         this.id = id;
     }
-
+    
+    public WorkTime(HourMinute start, HourMinute end, HourMinute total, int year, int month, int day, int id, int workerID) {
+        this.startHour = start.getHour();
+        this.startMinute = start.getMinute();
+        this.endHour = end.getHour();
+        this.endMinute = end.getMinute();
+        this.totalHour = total.getHour();
+        this.totalMinute = total.getMinute();
+        this.year = year;
+        this.month = month;
+        this.day = day;
+        this.id = id;
+        this.workerID = workerID;
+    }
+    
     @Override
     public String toString() {
         return this.startHour+":"+this.startMinute+ "  " +this.endHour+":"+this.endMinute + "  " + this.totalHour+":"+this.totalMinute + " " + this.year + "." + this.month + "." + this.day; 
     }
-    
+
     //<editor-fold defaultstate="collapsed" desc="GETTERS">
     public int getStartHour() {
         return startHour;
@@ -83,6 +85,10 @@ public class WorkTime {
     public int getID() {
         return id;
     }
+       
+    public int getWorkerID() {
+        return workerID;
+    }
 //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="SETTERS">
     public void setStartHour(int x) {
@@ -121,6 +127,10 @@ public class WorkTime {
     
     public void setid(int x) {
         this.id = x;
+    }
+    
+    public void setWorkerid(int x) {
+        this.workerID = x;
     }
 //</editor-fold>
 }
