@@ -15,4 +15,5 @@ public interface DBInterface {
     public void deleteFromTable(String tableName, int ID);
     public ArrayList<String> getAllNames();
     public ArrayList<Worker> getAllWorkers();
+    public void deleteWorker(int id);
 }

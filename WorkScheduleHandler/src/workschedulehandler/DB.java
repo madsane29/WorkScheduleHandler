@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class DB implements DBInterface{
@@ -191,9 +193,11 @@ public class DB implements DBInterface{
         }
     }
     
+    
+    
     public void deleteFromTable2() {
          try {
-            String sql = "DELETE FROM names WHERE ID > 5";
+            String sql = "DELETE FROM worktime WHERE workerid > 5";
             PreparedStatement ppst = conn.prepareStatement(sql);
             ppst.execute();
         } catch (SQLException ex) {
@@ -232,5 +236,18 @@ public class DB implements DBInterface{
         }
         
         return workers;
+    }
+
+    @Override
+    public void deleteWorker(int id) {
+        try {
+            String sql = "DELETE FROM names WHERE ID = ?";
+            PreparedStatement ppst = conn.prepareStatement(sql);
+            ppst.setInt(1, id);
+            ppst.execute();
+        } catch (SQLException ex) {
+            System.out.println("SQLException in class \"DB\" (\"deleteWorker(int id) failed\"): " + ex);   
+        }
+        
     }
 }

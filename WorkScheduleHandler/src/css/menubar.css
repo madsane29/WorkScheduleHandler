@@ -1,13 +1,7 @@
-*{
-    background-color-dark: #77300d;
-    background-color-light: linear-gradient(to right, #3f2416, #e5723b);
-}
-
-
 .menu-bar {
-    -fx-background-color: background-color-light;
+    -fx-background-color: linear-gradient(to right, #3f2416, #e5723b);
    
 }
 .menu .label {
-    -fx-text-fill: white;
+    -fx-text-fill: black;
 }

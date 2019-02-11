@@ -13,6 +13,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -77,8 +79,12 @@ public class Controller implements Initializable {
     Button openAddNewWorkerButton;
     @FXML
     Button addNewWorkerButton;
+    /*@FXML
+    Button cancelButton;*/
     @FXML
-    Button cancelNewWorkerButton;
+    Button openDeleteWorkerAnchorPane;
+    @FXML
+    Button deleteWorkerButton;
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Tables">
     @FXML
@@ -116,12 +122,16 @@ public class Controller implements Initializable {
     ChoiceBox searchNameChoiceBox;
     @FXML
     ChoiceBox addNameChoiceBox;
+    @FXML
+    ChoiceBox deleteNameChoiceBox;
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Panes">
     @FXML
     AnchorPane addWorkerAnchorPane;
     @FXML
     AnchorPane mainAnchorPane;
+    @FXML
+    AnchorPane deleteWorkerAnchorPane;
 //</editor-fold>  
 //<editor-fold defaultstate="collapsed" desc="ProgressIndicator">
     @FXML
@@ -178,6 +188,12 @@ public class Controller implements Initializable {
         ObservableList<String> add = FXCollections.observableList(addNames);
         addNameChoiceBox.setItems(add);
         addNameChoiceBox.getSelectionModel().selectFirst();
+        
+        ArrayList<String> deleteNames = new ArrayList<>(names);
+        deleteNames.add(0, "");
+        ObservableList<String> delete = FXCollections.observableList(deleteNames);
+        deleteNameChoiceBox.setItems(delete);
+        deleteNameChoiceBox.getSelectionModel().selectFirst();
     }
 //</editor-fold>
 
@@ -247,7 +263,6 @@ public class Controller implements Initializable {
                 }
             }
         }
-
     }
 
     private void WorkTimesFromDB() {
@@ -312,23 +327,25 @@ public class Controller implements Initializable {
 
         totalLabel.setText(TableViewWriteOutExtended.formatter(hour, minute));
         bonuses();
+        
     }
 
     private void bonuses() {
-        double normal = 0, extra = 0, bigextra = 0;
-        int fridayOrSaturday = 0;
+        //double normal = 0, extra = 0, bigextra = 0;
+        //int fridayOrSaturday = 0;
 
         if (workTimeData.isEmpty()) {
-            normalAmount.setText("");
-            extraAmount.setText("");
-            bigextraAmount.setText("");
-            totalam.setText("");
-            net.setText("");
-            normalHoursLabel.setText("");
-            extraHoursLabel.setText("");
-            bigextraHoursLabel.setText("");
-            bonusLabel.setText("0");
-
+                normalAmount.setText("0");
+                extraAmount.setText("0");
+                bigextraAmount.setText("0");
+                totalam.setText("0");
+                net.setText("0");
+                normalHoursLabel.setText("0");
+                extraHoursLabel.setText("0");
+                bigextraHoursLabel.setText("0");
+                bonusLabel.setText("0");
+        }
+        /*
         } else {
             for (WorkTime i : workTimeData) {
                 try {
@@ -401,12 +418,12 @@ public class Controller implements Initializable {
             String l1 = "" + normal;
             String l2 = "" + extra;
             String l3 = "" + bigextra;
-            String l4 = "" + bonus;
+            //String l4 = "" + bonus;
 
             normalHoursLabel.setText(l1);
             extraHoursLabel.setText(l2);
             bigextraHoursLabel.setText(l3);
-            bonusLabel.setText(l4);
+            //bonusLabel.setText(l4);
 
             double normalSalary, extraSalary, bigextraSalary;
 
@@ -440,25 +457,153 @@ public class Controller implements Initializable {
             String i3 = "" + bigextraamInt;
             String i4 = "" + totalammInt;
             String i5 = "" + netamInt;
-
-            normalAmount.setText(i1);
+         */
+ /*normalAmount.setText(i1);
             extraAmount.setText(i2);
             bigextraAmount.setText(i3);
             totalam.setText(i4);
-            net.setText(i5);
-        }
+            net.setText(i5);*/
+
+        calculateNormal();
+        calculateExtra();
+        calculateBigExtra();
+        //calculateBonus();
+        calculateTotal();
+
     }
 
+
     private void calculateNormal() {
-        
+        double hours = 0;
+        for (WorkTime i : workTimeData) {
+            int start = 0, end = 0;
+            start = i.getStartHour() * 60 + i.getStartMinute();
+            end = i.getEndHour() * 60 + i.getEndMinute();
+
+            
+            if (start >= 360 && start <= 1020 && end <= 1080 && end != 0) {
+                hours += end - start;
+            }
+            if (start >= 360 && start <= 1020 && (end >= 1140 || end <= 360 || end == 0)) {
+                end = 1080;
+                hours += end - start;
+            }
+            if (start >= 1080 && end >= 420 && end <= 900) {
+                start = 360;
+                hours += end - start;
+            }
+        }
+
+        hours /= 60;
+        normalHoursLabel.setText("" + hours);
+        int salary = Integer.parseInt(wageHourly.getText());
+        double totalSalary = hours * salary;
+        int salaryInt = keepTheChange((int) totalSalary);
+        normalAmount.setText("" + salaryInt);
     }
-    
     private void calculateExtra() {
+        double hours = 0;
+        for (WorkTime i : workTimeData) {
+            int start = 0, end = 0;
+            start = i.getStartHour() * 60 + i.getStartMinute();
+            end = i.getEndHour() * 60 + i.getEndMinute();
+
+            if (start >= 360 && start <= 1260 && ((end >= 1140 && end <= 1440) || end <= 600)) {
+                if (start <= 1020) {
+                    start = 1080;
+                }
+                if (end <= 600) {
+                    end = 1320;
+                }
+                if (end >= 1380) {
+                    end = 1320;
+                }
+                hours += end - start;
+            }
+        }
+        
+        hours /= 60;
+        extraHoursLabel.setText("" + hours);
+        int salary = Integer.parseInt(wageHourly.getText());
+        double totalSalary = hours * salary * 1.3;
+        int salaryInt = keepTheChange((int) totalSalary);
+        extraAmount.setText("" + salaryInt);
+    }
+    private void calculateBigExtra() {
+        double hours = 0;
+        int fridayOrSaturday = 0;
+        Boolean gotBonus1 = false;
+        Boolean gotBonus2 = false;
+        
+        for (WorkTime i : workTimeData) {
+            int start = 0, end = 0;
+            start = i.getStartHour() * 60 + i.getStartMinute();
+            end = i.getEndHour() * 60 + i.getEndMinute();
+            
+            if (start <= 1320 && end >= 360) gotBonus2 = true;
+
+            if ((start < 1320 || start >= 1320) && (end >= 1320 || end < 600)) {
+                try {
+                    if (end < 360) {
+                        end += 1440;
+                    } else {
+                        end = 360 + 1440;
+                    } 
+                    if (start < 1320) start = 1320;
+                    hours += end - start;
+                    
+                    
+                    
+                    String dateString = String.format("%d-%d-%d", i.getYear(), i.getMonth(), i.getDay());
+                    Date date = null;
+                    date = new SimpleDateFormat("yyyy-M-d").parse(dateString);
+                    
+                    String dayOfWeek = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date);
+                    
+                    if (dayOfWeek.equals("Friday") || dayOfWeek.equals("Saturday")) {
+                       gotBonus1 = true;
+                    }
+                    
+                    if (gotBonus1 && gotBonus2) fridayOrSaturday++;                    
+                } catch (ParseException ex) {
+                    Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        
+        int bonus = fridayOrSaturday * 3000;
+        bonusLabel.setText(""+bonus);
+        
+        hours /= 60;
+        bigextraHoursLabel.setText("" + hours);
+        int salary = Integer.parseInt(wageHourly.getText());
+        double totalSalary = hours * salary * 1.4;
+        int salaryInt = keepTheChange((int) totalSalary);
+        bigextraAmount.setText("" + salaryInt);
+        
         
     }
     
-    private void calculateBigExtra() {
+    private void calculateTotal() {
+        int normal = Integer.parseInt(normalAmount.getText());
+        int extra = Integer.parseInt(extraAmount.getText());
+        int bigextra = Integer.parseInt(bigextraAmount.getText());
+        int bonus = Integer.parseInt(bonusLabel.getText());
+
+        double totalamm = normal + extra + bigextra + bonus;
+        double netam = totalamm * 0.85;
+
+        if (netam > 58823) {
+            netam -= 1000;
+        } else {
+            netam *= 0.983;
+        }
         
+        int totalammInt = keepTheChange((int) totalamm);
+        int netamInt = keepTheChange((int) netam);
+        
+        totalam.setText("" + totalammInt);
+        net.setText("" + netamInt);  
     }
     
     private int keepTheChange(int amount) {
@@ -500,21 +645,51 @@ public class Controller implements Initializable {
     @FXML
     private void addNewWorkerButton(ActionEvent event) {
         String name = workerNameTextField.getText();
-        workerNameTextField.setText("");
-        db.addWorker(name);
-        addWorkerAnchorPane.setVisible(false);
+        if (!name.equals("")) {
+            workerNameTextField.setText("");
+            db.addWorker(name);
+            addWorkerAnchorPane.setVisible(false);
+            mainAnchorPane.setOpacity(1);
+            mainAnchorPane.setDisable(false);
+
+            setNamesChoiceBoxes();
+        }
+    }
+
+    @FXML
+    private void cancelButton(ActionEvent event) {
+        if (addWorkerAnchorPane.isVisible()) {
+            addWorkerAnchorPane.setVisible(false);
+        } else {
+            deleteWorkerAnchorPane.setVisible(false);
+        }
         mainAnchorPane.setOpacity(1);
         mainAnchorPane.setDisable(false);
-        
-        setNamesChoiceBoxes();
     }
     
     @FXML
-    private void cancelNewWorkerButton(ActionEvent event) {
-        addWorkerAnchorPane.setVisible(false);
+    private void openDeleteWorkerButton(ActionEvent event) {
+        mainAnchorPane.setOpacity(0.3);
+        mainAnchorPane.setDisable(true);
+        deleteWorkerAnchorPane.setVisible(true);
+    }
+    
+    @FXML
+    private void deleteWorker(ActionEvent event) {
+        String choiceBoxName = (String) deleteNameChoiceBox.getSelectionModel().getSelectedItem();
+        int workerid = Integer.parseInt(choiceBoxName.substring(choiceBoxName.indexOf("(") + 1, choiceBoxName.indexOf(")")));
+        db.deleteWorker(workerid);
+        
+        setNamesChoiceBoxes();
+        
+        
+        deleteWorkerAnchorPane.setVisible(false);
         mainAnchorPane.setOpacity(1);
         mainAnchorPane.setDisable(false);
+
     }
+    
+    
     
     @FXML
     private void addButton(ActionEvent event) {
@@ -585,7 +760,7 @@ public class Controller implements Initializable {
 //</editor-fold>
     
     @Override
-    public void initialize(URL url, ResourceBundle rb) {        
+    public void initialize(URL url, ResourceBundle rb) {
         datePicker.setValue(LocalDate.now());        
         fillChoiceBoxes();
         tableColumns();
