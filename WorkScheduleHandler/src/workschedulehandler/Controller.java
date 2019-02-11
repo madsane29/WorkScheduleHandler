@@ -331,9 +331,6 @@ public class Controller implements Initializable {
     }
 
     private void bonuses() {
-        //double normal = 0, extra = 0, bigextra = 0;
-        //int fridayOrSaturday = 0;
-
         if (workTimeData.isEmpty()) {
                 normalAmount.setText("0");
                 extraAmount.setText("0");
@@ -345,129 +342,9 @@ public class Controller implements Initializable {
                 bigextraHoursLabel.setText("0");
                 bonusLabel.setText("0");
         }
-        /*
-        } else {
-            for (WorkTime i : workTimeData) {
-                try {
-                    int start = 0, end = 0;
-                    Boolean gotBonus = false;
-                    String dateString = String.format("%d-%d-%d", i.getYear(), i.getMonth(), i.getDay());
-                    Date date = new SimpleDateFormat("yyyy-M-d").parse(dateString);
-                    String dayOfWeek = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date);
-
-                    start = i.getStartHour() * 60 + i.getStartMinute();
-                    end = i.getEndHour() * 60 + i.getEndMinute();
-                    if (start >= 360 && start <= 1020 && end <= 1080 && end != 0) {
-                        normal += end - start;
-                    }
-                    if (start >= 360 && start <= 1020 && (end >= 1140 || end <= 360 || end == 0)) {
-                        end = 1080;
-                        normal += end - start;
-                    }
-                    if (start >= 1080 && end >= 420 && end <= 900) {
-                        start = 360;
-                        normal += end - start;
-                    }
-
-                    start = i.getStartHour() * 60 + i.getStartMinute();
-                    end = i.getEndHour() * 60 + i.getEndMinute();
-                    if (start >= 360 && start <= 1260 && ((end >= 1140 && end <= 1440) || end <= 600)) {
-                        if (start <= 1020) {
-                            start = 1080;
-                        }
-                        if (end <= 600) {
-                            end = 1320;
-                        }
-                        if (end >= 1380) {
-                            end = 1320;
-                        }
-                        extra += end - start;
-                    }
-
-                    start = i.getStartHour() * 60 + i.getStartMinute();
-                    end = i.getEndHour() * 60 + i.getEndMinute();
-
-                    if (start >= 1320 && (end >= 1320 || end < 600)) {
-                        if (start < 1320) {
-                            start = 1320;
-                        }
-                        if (end < 360) {
-                            end += 1440;
-                        } else {
-                            end = 360 + 1440;
-                        }
-                        if (end - start == 480) {
-                            gotBonus = true;
-                        }
-                        bigextra += end - start;
-
-                    }
-
-                    if (gotBonus && (dayOfWeek.equals("Friday") || dayOfWeek.equals("Saturday"))) {
-                        fridayOrSaturday++;
-                    }
-                } catch (ParseException ex) {
-                    System.out.println("Problem in FXMLDocumentController/bonuses: " + ex);
-                }
-            }
-
-            int bonus = fridayOrSaturday * 3000;
-            normal /= 60;
-            extra /= 60;
-            bigextra /= 60;
-            String l1 = "" + normal;
-            String l2 = "" + extra;
-            String l3 = "" + bigextra;
-            //String l4 = "" + bonus;
-
-            normalHoursLabel.setText(l1);
-            extraHoursLabel.setText(l2);
-            bigextraHoursLabel.setText(l3);
-            //bonusLabel.setText(l4);
-
-            double normalSalary, extraSalary, bigextraSalary;
-
-            int salary = Integer.parseInt(wageHourly.getText());
-
-            normalSalary = salary;
-            extraSalary = salary * 1.3;
-            bigextraSalary = salary * 1.4;
-
-            double normalam = normal * normalSalary;
-            double extraam = extra * extraSalary;
-            double bigextraam = bigextra * bigextraSalary;
-            double totalamm = normalam + extraam + bigextraam + bonus;
-            double netam = totalamm * 0.85;
-
-            if (netam > 58823) {
-                netam -= 1000;
-            } else {
-                netam *= 0.983;
-            }
-
-            
-            int normalamInt = keepTheChange((int) normalam);
-            int extraamInt = keepTheChange((int) extraam);
-            int bigextraamInt = keepTheChange((int) bigextraam);
-            int totalammInt = keepTheChange((int) totalamm);
-            int netamInt = keepTheChange((int) netam);
-
-            String i1 = "" + normalamInt;
-            String i2 = "" + extraamInt;
-            String i3 = "" + bigextraamInt;
-            String i4 = "" + totalammInt;
-            String i5 = "" + netamInt;
-         */
- /*normalAmount.setText(i1);
-            extraAmount.setText(i2);
-            bigextraAmount.setText(i3);
-            totalam.setText(i4);
-            net.setText(i5);*/
-
         calculateNormal();
         calculateExtra();
         calculateBigExtra();
-        //calculateBonus();
         calculateTotal();
 
     }
@@ -822,38 +699,86 @@ deleteButton.addEventHandler(MouseEvent.MOUSE_EXITED, new EventHandler<MouseEven
 });*/
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="TEXT FIELDS ONLY NUMBERS (TEXT PROPERTIES)">
+        /*public void handleTextProperties(String textFieldName) {
+          
+        }*/
+
         startHourInput.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     startHourInput.setText(newValue.replaceAll("[^\\d]", ""));
+                } else if (startHourInput.getText().equals("")) {
+                    startHourInput.setText("0");
+                } else if (oldValue.equals("0")) {
+                    startHourInput.setText(newValue.substring(1));
+                } else {
+                    int time = Integer.parseInt(startHourInput.getText());
+                    if (time > 23) {
+                        time /= 10;
+                        startHourInput.setText("" + time);
+                    }
                 }
             }
         });
+        
         startMinuteInput.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     startMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
+                } else if (startMinuteInput.getText().equals("")) {
+                    startMinuteInput.setText("0");
+                } else if (oldValue.equals("0")) {
+                    startMinuteInput.setText(newValue.substring(1));
+                } else {
+                    int time = Integer.parseInt(startMinuteInput.getText());
+                    if (time > 59) {
+                        time /= 10;
+                        startMinuteInput.setText("" + time);
+                    }
                 }
             }
         });
+        
         endHourInput.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     endHourInput.setText(newValue.replaceAll("[^\\d]", ""));
+                } else if (endHourInput.getText().equals("")) {
+                    endHourInput.setText("0");
+                } else if (oldValue.equals("0")) {
+                    endHourInput.setText(newValue.substring(1));
+                } else {
+                    int time = Integer.parseInt(endHourInput.getText());
+                    if (time > 23) {
+                        time /= 10;
+                        endHourInput.setText("" + time);
+                    }
                 }
             }
         });
+        
         endMinuteInput.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     endMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
+                } else if (endMinuteInput.getText().equals("")) {
+                    endMinuteInput.setText("0");
+                } else if (oldValue.equals("0")) {
+                    endMinuteInput.setText(newValue.substring(1));
+                } else {
+                    int time = Integer.parseInt(endMinuteInput.getText());
+                    if (time > 59) {
+                        time /= 10;
+                        endMinuteInput.setText("" + time);
+                    }
                 }
             }
         });
+        
         wageHourly.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {

@@ -9,13 +9,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class DB implements DBInterface{
     final String JDBC_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
-    final String URL = "jdbc:derby:WorkDB3;create=true";
+    final String URL = "jdbc:derby:WorkDB5;create=true";
 
     Connection conn = null;
     DatabaseMetaData dbmd = null;
@@ -54,7 +52,7 @@ public class DB implements DBInterface{
             ResultSet rs = dbmd.getTables(null, "APP", "WORKTIME", null);
             if (!rs.next()) {
                 String sql = "create table worktime (id INT not null primary key GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), "
-                        + "starthour int, endhour int, startminute int, endminute int, y3ar int, month int, day int, workerid int FOREIGN KEY REFERENCES names(id))";
+                        + "starthour int, endhour int, startminute int, endminute int, y3ar int, month int, day int, workerid int, FOREIGN KEY(workerid) REFERENCES names(id))";
                 statement.execute(sql);
             }
         } catch (SQLException ex) {
