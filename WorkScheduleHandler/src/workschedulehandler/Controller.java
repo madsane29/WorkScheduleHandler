@@ -1,12 +1,15 @@
 package workschedulehandler;
 
 //<editor-fold defaultstate="collapsed" desc="IMPORTS">
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -15,6 +18,9 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -36,6 +42,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.util.Duration;
+import org.json.JSONException;
 //</editor-fold>
 
 public class Controller implements Initializable {
@@ -111,6 +119,8 @@ public class Controller implements Initializable {
     Label totalam;
     @FXML
     Label net;
+    @FXML
+    Label dateLabel;
 
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="ChoiceBoxes">
@@ -312,51 +322,49 @@ public class Controller implements Initializable {
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="Calculate Hours/Money">
     private void calculateTotalWorkedHours() {
-
+        
         int hour = 0, minute = 0;
         for (WorkTime i : workTimeData) {
             hour += i.getTotalHour();
             minute += i.getTotalMinute();
         }
-
+        
         while (minute > 59) {
             hour++;
             minute -= 60;
         }
-
+        
         totalLabel.setText(TableViewWriteOutExtended.formatter(hour, minute));
         bonuses();
         
     }
-
     private void bonuses() {
         if (workTimeData.isEmpty()) {
-                normalAmount.setText("0");
-                extraAmount.setText("0");
-                bigextraAmount.setText("0");
-                totalam.setText("0");
-                net.setText("0");
-                normalHoursLabel.setText("0");
-                extraHoursLabel.setText("0");
-                bigextraHoursLabel.setText("0");
-                bonusLabel.setText("0");
+            normalAmount.setText("0");
+            extraAmount.setText("0");
+            bigextraAmount.setText("0");
+            totalam.setText("0");
+            net.setText("0");
+            normalHoursLabel.setText("0");
+            extraHoursLabel.setText("0");
+            bigextraHoursLabel.setText("0");
+            bonusLabel.setText("0");
         }
         calculateNormal();
         calculateExtra();
         calculateBigExtra();
         calculateTotal();
-
+        
     }
-
-
     private void calculateNormal() {
         double hours = 0;
         for (WorkTime i : workTimeData) {
             int start = 0, end = 0;
             start = i.getStartHour() * 60 + i.getStartMinute();
             end = i.getEndHour() * 60 + i.getEndMinute();
-
+            
             
             if (start >= 360 && start <= 1020 && end <= 1080 && end != 0) {
                 hours += end - start;
@@ -370,7 +378,7 @@ public class Controller implements Initializable {
                 hours += end - start;
             }
         }
-
+        
         hours /= 60;
         normalHoursLabel.setText("" + hours);
         int salary = Integer.parseInt(wageHourly.getText());
@@ -384,7 +392,7 @@ public class Controller implements Initializable {
             int start = 0, end = 0;
             start = i.getStartHour() * 60 + i.getStartMinute();
             end = i.getEndHour() * 60 + i.getEndMinute();
-
+            
             if (start >= 360 && start <= 1260 && ((end >= 1140 && end <= 1440) || end <= 600)) {
                 if (start <= 1020) {
                     start = 1080;
@@ -418,14 +426,14 @@ public class Controller implements Initializable {
             end = i.getEndHour() * 60 + i.getEndMinute();
             
             if (start <= 1320 && end >= 360) gotBonus2 = true;
-
+            
             if ((start < 1320 || start >= 1320) && (end >= 1320 || end < 600)) {
                 try {
                     if (end < 360) {
                         end += 1440;
                     } else {
                         end = 360 + 1440;
-                    } 
+                    }
                     if (start < 1320) start = 1320;
                     hours += end - start;
                     
@@ -438,10 +446,10 @@ public class Controller implements Initializable {
                     String dayOfWeek = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date);
                     
                     if (dayOfWeek.equals("Friday") || dayOfWeek.equals("Saturday")) {
-                       gotBonus1 = true;
+                        gotBonus1 = true;
                     }
                     
-                    if (gotBonus1 && gotBonus2) fridayOrSaturday++;                    
+                    if (gotBonus1 && gotBonus2) fridayOrSaturday++;
                 } catch (ParseException ex) {
                     Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -460,16 +468,15 @@ public class Controller implements Initializable {
         
         
     }
-    
     private void calculateTotal() {
         int normal = Integer.parseInt(normalAmount.getText());
         int extra = Integer.parseInt(extraAmount.getText());
         int bigextra = Integer.parseInt(bigextraAmount.getText());
         int bonus = Integer.parseInt(bonusLabel.getText());
-
+        
         double totalamm = normal + extra + bigextra + bonus;
         double netam = totalamm * 0.85;
-
+        
         if (netam > 58823) {
             netam -= 1000;
         } else {
@@ -480,30 +487,30 @@ public class Controller implements Initializable {
         int netamInt = keepTheChange((int) netam);
         
         totalam.setText("" + totalammInt);
-        net.setText("" + netamInt);  
+        net.setText("" + netamInt);
     }
-    
     private int keepTheChange(int amount) {
         HashSet<Integer> smallerSide = new HashSet<>();
         smallerSide.add(1);
         smallerSide.add(2);
         smallerSide.add(3);
         smallerSide.add(4);
-
+        
         HashSet<Integer> biggerSide = new HashSet<>();
         biggerSide.add(6);
         biggerSide.add(7);
         biggerSide.add(8);
         biggerSide.add(9);
-
+        
         if (smallerSide.contains(amount % 10)) {
             amount -= amount % 10;
         } else if (biggerSide.contains(amount % 10)) {
             amount += (10 - (amount % 10));
         }
-
+        
         return amount;
     }
+//</editor-fold>
 
     private void refreshTableFromDB() {
         WorkTimeToTVWOEFromDB();
@@ -565,8 +572,6 @@ public class Controller implements Initializable {
         mainAnchorPane.setDisable(false);
 
     }
-    
-    
     
     @FXML
     private void addButton(ActionEvent event) {
@@ -636,11 +641,28 @@ public class Controller implements Initializable {
     }
 //</editor-fold>
     
+    public void setDateLabel() throws IOException, JSONException {
+        Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
+            try {
+                dateLabel.setText(Unixtime.getTime());
+            } catch (IOException | JSONException ex) {
+                Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }), new KeyFrame(Duration.seconds(1)));
+        clock.setCycleCount(Animation.INDEFINITE);
+        clock.play();
+    }
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        datePicker.setValue(LocalDate.now());        
+        datePicker.setValue(LocalDate.now());
         fillChoiceBoxes();
         tableColumns();
+        try {
+            setDateLabel();
+        } catch (IOException | JSONException ex) {
+            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         yearChoiceBox.setOnAction((event) -> {
             search();

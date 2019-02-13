@@ -1,8 +1,8 @@
 ----------------------------------------------------------------
-Mon Feb 11 17:33:27 CET 2019:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.2 - (1629631): instance a816c00e-0168-dd68-005b-00000a35b840 
+Wed Feb 13 18:12:39 CET 2019:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.2 - (1629631): instance a816c00e-0168-e7d8-9ab9-00000a353018 
 on database directory D:\programozas\WorkSchedule\WorkScheduleHandler\WorkDB5 with class loader sun.misc.Launcher$AppClassLoader@55f96302 
-Loaded from file:/D:/programozas/WorkSchedule/WorkScheduleHandler/dist/run777122130/lib/derby.jar
+Loaded from file:/D:/programozas/WorkSchedule/WorkScheduleHandler/dist/run1816569371/lib/derby.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.8.0_171-b11
 user.dir=D:\programozas\WorkSchedule\WorkScheduleHandler

@@ -295,6 +295,7 @@
                         </SplitPane>
                      </children>
                   </Pane>
+            <Label fx:id="dateLabel" alignment="TOP_RIGHT" stylesheets="@../css/label.css" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
             <AnchorPane fx:id="addWorkerAnchorPane" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="100.0">

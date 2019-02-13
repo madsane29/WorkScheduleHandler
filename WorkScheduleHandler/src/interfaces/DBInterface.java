@@ -16,4 +16,6 @@ public interface DBInterface {
     public ArrayList<String> getAllNames();
     public ArrayList<Worker> getAllWorkers();
     public void deleteWorker(int id);
+    public int getNumberOfWorkers();
+    public ArrayList<Worker> getHalfOfTheWorkers(int limit, Boolean asc);
 }

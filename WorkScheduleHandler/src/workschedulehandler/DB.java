@@ -246,6 +246,40 @@ public class DB implements DBInterface{
         } catch (SQLException ex) {
             System.out.println("SQLException in class \"DB\" (\"deleteWorker(int id) failed\"): " + ex);   
         }
-        
+    }
+
+    @Override
+    public int getNumberOfWorkers() {
+        String sql = "SELECT COUNT(*) FROM NAMES";
+        try {
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next()) return rs.getInt(1);
+        } catch (SQLException ex) {
+            System.out.println("SQLException in class \"DB\" (\"public int getNumberOfWorkers() failed\"): " + ex);   
+        }
+        return 0;
+    }
+    
+    
+    @Override
+    public ArrayList<Worker> getHalfOfTheWorkers(int limit, Boolean firstHalf) {
+        String sql;
+        ArrayList<Worker> workers = new ArrayList<>();
+        if (firstHalf) {
+            sql = "SELECT * FROM NAMES ORDER BY ID FETCH NEXT " + limit + " ROWS ONLY";
+        } else {
+            sql = "SELECT * FROM NAMES ORDER BY ID OFFSET " + limit + " ROWS";
+        }
+        try {
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                String name = rs.getString("name");
+                int id = rs.getInt("id");
+                workers.add(new Worker(id, name));
+            }
+        } catch (Exception ex) {
+
+        }
+        return workers;
     }
 }
