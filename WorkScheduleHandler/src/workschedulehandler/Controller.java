@@ -7,15 +7,15 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Year;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.animation.Animation;
@@ -150,19 +150,17 @@ public class Controller implements Initializable {
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="CHOICE BOXES">
-    public void fillChoiceBoxes() {
+    private void fillChoiceBoxes() {
         setYearChoiceBox();
         setMonthChoiceBox();
         setNamesChoiceBoxes();
     }
-
-    public void setMonthChoiceBox() {
+    private void setMonthChoiceBox() {
         ObservableList<String> months = FXCollections.observableArrayList("All", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
         monthChoiceBox.setItems(months);
         monthChoiceBox.setValue("All");
     }
-
-    public void setYearChoiceBox() {
+    private void setYearChoiceBox() {
         int year = Year.now().getValue();
         ArrayList<String> list = new ArrayList<>();
         list.add("All");
@@ -175,8 +173,7 @@ public class Controller implements Initializable {
         yearChoiceBox.setItems(years);
         yearChoiceBox.setValue("All");
     }
-
-    public void setNamesChoiceBoxes() {
+    private void setNamesChoiceBoxes() {
         ArrayList<Worker> workers = new ArrayList<>();
         ArrayList<String> names = new ArrayList<>();
         
@@ -261,20 +258,6 @@ public class Controller implements Initializable {
         }
     }
 
-    private void WorkTimeToTVWOE() {
-        TVWODataExtended.clear();
-        ArrayList<Worker> workers = db.getWorkers();
-        for (WorkTime i : workTimeData) {
-            workTimeData.add(i);
-            for (Worker j : workers) {
-                if (i.getWorkerID() == j.getID()) {
-                    TableViewWriteOutExtended tvwoe = new TableViewWriteOutExtended(i, j.getName());
-                    TVWODataExtended.add(tvwoe);
-                }
-            }
-        }
-    }
-
     private void WorkTimesFromDB() {
         workTimeData.clear();
         ArrayList<WorkTime> works = db.getAllWorkTimes();
@@ -299,11 +282,12 @@ public class Controller implements Initializable {
             
             month = (Integer) monthChoiceBox.getSelectionModel().getSelectedIndex();
 
-            TVWODataExtended.clear();
 
             if (year == 0 && month == 0 && workerID == 0) {
+                
                 WorkTimeToTVWOEFromDB();
             } else {
+                TVWODataExtended.clear();
                 WorkTimesFromDB();
                 ArrayList<WorkTime> tmp = new ArrayList<>();
                 for (WorkTime i : workTimeData) {
@@ -511,13 +495,6 @@ public class Controller implements Initializable {
         return amount;
     }
 //</editor-fold>
-
-    private void refreshTableFromDB() {
-        WorkTimeToTVWOEFromDB();
-        table.setItems(TVWODataExtended);
-        search();
-    }
-
 //<editor-fold defaultstate="collapsed" desc="Buttons">
     @FXML
     private void openAddNewWorkerButton(ActionEvent event) {
@@ -641,8 +618,21 @@ public class Controller implements Initializable {
     }
 //</editor-fold>
     
-    public void setDateLabel() throws IOException, JSONException {
+    private void setDateLabel() throws IOException, JSONException {
+        AtomicLong unixtime = new AtomicLong(Unixtime.getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
+            try {
+                Date date = new Date(unixtime.getAndIncrement() * 1000L);
+                dateLabel.setText(sdf.format(date));
+            } catch (Exception ex) {
+                Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }), new KeyFrame(Duration.seconds(1)));
+        clock.setCycleCount(Animation.INDEFINITE);
+        clock.play();
+        
+        /*Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
             try {
                 dateLabel.setText(Unixtime.getTime());
             } catch (IOException | JSONException ex) {
@@ -650,7 +640,7 @@ public class Controller implements Initializable {
             }
         }), new KeyFrame(Duration.seconds(1)));
         clock.setCycleCount(Animation.INDEFINITE);
-        clock.play();
+        clock.play();*/
     }
     
     @Override
@@ -658,6 +648,7 @@ public class Controller implements Initializable {
         datePicker.setValue(LocalDate.now());
         fillChoiceBoxes();
         tableColumns();
+        
         try {
             setDateLabel();
         } catch (IOException | JSONException ex) {
@@ -692,39 +683,8 @@ public class Controller implements Initializable {
         ImageView imageView2 = new ImageView(image2);
         deleteButton.setGraphic(imageView2);
 
-        /*
-DropShadow shadow = new DropShadow();
-addButton.addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
-    @Override
-    public void handle(MouseEvent e) {
-        addButton.setEffect(shadow);
-    }
-});
-addButton.addEventHandler(MouseEvent.MOUSE_EXITED, new EventHandler<MouseEvent>() {
-    @Override
-    public void handle(MouseEvent e) {
-        addButton.setEffect(null);
-    }
-});
-
-deleteButton.addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
-    @Override
-    public void handle(MouseEvent e) {
-        deleteButton.setEffect(shadow);
-    }
-});
-deleteButton.addEventHandler(MouseEvent.MOUSE_EXITED, new EventHandler<MouseEvent>() {
-    @Override
-    public void handle(MouseEvent e) {
-        deleteButton.setEffect(null);
-    }
-});*/
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="TEXT FIELDS ONLY NUMBERS (TEXT PROPERTIES)">
-        /*public void handleTextProperties(String textFieldName) {
-          
-        }*/
-
         startHourInput.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {

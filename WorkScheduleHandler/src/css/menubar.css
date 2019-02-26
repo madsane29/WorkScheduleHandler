@@ -1,6 +1,5 @@
 .menu-bar {
     -fx-background-color: linear-gradient(to right, #3f2416, #e5723b);
-   
 }
 .menu .label {
     -fx-text-fill: black;

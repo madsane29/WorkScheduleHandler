@@ -1,10 +1,5 @@
-*{
-    background-color-dark: #77300d;
-    background-color-light: linear-gradient(to left, #3f2416, #e5723b);
-}
-
 .text-field {
-    -fx-background-color: background-color-light;
+    -fx-background-color: linear-gradient(to left, #3f2416, #e5723b);
     -fx-text-fill: white;
     -fx-font-size: 1.2em;
 }

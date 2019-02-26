@@ -12,8 +12,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,7 +27,7 @@ public class Unixtime {
         return sb.toString();
     }
 
-    public static JSONObject readJsonFromUrl() throws IOException, JSONException {
+    private static JSONObject readJsonFromUrl() throws IOException, JSONException {
         String url = "http://worldtimeapi.org/api/ip";
         InputStream is = new URL(url).openStream();
         try {
@@ -42,14 +40,10 @@ public class Unixtime {
         }
     }
     
-    public static String getTime() throws IOException, JSONException {
+    public static long getTime() throws IOException, JSONException {
         JSONObject json = readJsonFromUrl();
         long time = Integer.parseInt((String) json.get("unixtime"));
         
-        Date date = new Date(time*1000L);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String formatDate = sdf.format(date);
-        
-        return formatDate;
+        return time;
     }
 }

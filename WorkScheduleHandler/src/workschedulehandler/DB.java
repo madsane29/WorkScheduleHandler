@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 
+
 public class DB implements DBInterface{
     final String JDBC_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
     final String URL = "jdbc:derby:WorkDB5;create=true";
@@ -191,22 +192,10 @@ public class DB implements DBInterface{
         }
     }
     
-    
-    
-    public void deleteFromTable2() {
-         try {
-            String sql = "DELETE FROM worktime WHERE workerid > 5";
-            PreparedStatement ppst = conn.prepareStatement(sql);
-            ppst.execute();
-        } catch (SQLException ex) {
-            System.out.println("SQLException in class \"DB\" (\"deleteFromTable(String tableName, int ID) failed\"): " + ex);            
-        }
-    }
-
     @Override
-    public ArrayList<String> getAllNames() {
+    public ArrayList<String> getAllWorkerNames() {
         ArrayList<String> names = new ArrayList<>();
-        String sql = "select * from names";
+        String sql = "select name from names";
         try {
             ResultSet rs = statement.executeQuery(sql);
             while (rs.next()) {
@@ -259,7 +248,6 @@ public class DB implements DBInterface{
         }
         return 0;
     }
-    
     
     @Override
     public ArrayList<Worker> getHalfOfTheWorkers(int limit, Boolean firstHalf) {
