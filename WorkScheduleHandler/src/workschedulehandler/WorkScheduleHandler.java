@@ -1,5 +1,6 @@
 package workschedulehandler;
 
+import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,13 +16,12 @@ public class WorkScheduleHandler extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("/workschedulehandler/View.fxml"));
         Scene scene = new Scene(root);
         
-        
         stage.setScene(scene);
         stage.setTitle("Work Time Schedule Handler");
         stage.setResizable(false);
         stage.show();
-        } catch(Exception ex) {
-            System.out.println("Problem in WorkScheduleHandler/start: " + ex);
+        } catch(IOException ex) {
+            System.out.println("IOException in WorkScheduleHandler/start: " + ex);
         }
          
     }

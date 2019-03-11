@@ -25,18 +25,18 @@ public class DB implements DBInterface{
             conn = DriverManager.getConnection(URL);
         } catch (SQLException ex) {
             System.out.println("SQLException in class \"DB\" (constructor):\n" + ex);
-        }
+        } 
 
         try {
             statement = conn.createStatement();
-        } catch (Exception ex) {
-            System.out.println("Exception in DB class --  statement = conn.createStatement(); " + ex);
+        } catch (SQLException ex) {
+            System.out.println("SQLException in DB class --  statement = conn.createStatement(); " + ex);
         }
         try {
             dbmd = conn.getMetaData();
-        } catch (Exception ex) {
-            System.out.println("Exception in DB class -- dbmd = conn.getMetaData(); " + ex);
-        }
+        } catch (SQLException ex) {
+            System.out.println("SQLException in DB class -- dbmd = conn.getMetaData(); " + ex);
+        } 
 
         try {
             ResultSet rs = dbmd.getTables(null, "APP", "NAMES", null);
@@ -47,7 +47,7 @@ public class DB implements DBInterface{
             }
         } catch (SQLException ex) {
             System.out.println("SQLException in class \"DB\" (\"ResultSet/Creating table ('''''names''''') \" failed): " + ex);
-        }
+        } 
 
         try {
             ResultSet rs = dbmd.getTables(null, "APP", "WORKTIME", null);
@@ -58,10 +58,12 @@ public class DB implements DBInterface{
             }
         } catch (SQLException ex) {
             System.out.println("SQLException in class \"DB\" (\"ResultSet/Creating table ('''''worktime''''') \" failed): " + ex);
-        }
+        } 
+        
 
 
     }
+    
     
     @Override
     public void addWork(WorkTime workTime) {
@@ -187,6 +189,7 @@ public class DB implements DBInterface{
             PreparedStatement ppst = conn.prepareStatement(sql);
             ppst.setInt(1, ID);
             ppst.execute();
+            ppst.close();
         } catch (SQLException ex) {
             System.out.println("SQLException in class \"DB\" (\"deleteFromTable(String tableName, int ID) failed\"): " + ex);            
         }
@@ -228,13 +231,23 @@ public class DB implements DBInterface{
     @Override
     public void deleteWorker(int id) {
         try {
-            String sql = "DELETE FROM names WHERE ID = ?";
+            String sql = "DELETE FROM worktime WHERE workerid = ?";
             PreparedStatement ppst = conn.prepareStatement(sql);
             ppst.setInt(1, id);
             ppst.execute();
+            ppst.close();
+            
+            sql = "DELETE FROM names WHERE ID = ?";
+            ppst = conn.prepareStatement(sql);
+            ppst.setInt(1, id);
+            ppst.execute();
+            ppst.close();
+            
+
+            
         } catch (SQLException ex) {
             System.out.println("SQLException in class \"DB\" (\"deleteWorker(int id) failed\"): " + ex);   
-        }
+        } 
     }
 
     @Override

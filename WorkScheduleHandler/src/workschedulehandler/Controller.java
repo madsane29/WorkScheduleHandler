@@ -1,7 +1,6 @@
 package workschedulehandler;
 
 //<editor-fold defaultstate="collapsed" desc="IMPORTS">
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
@@ -14,11 +13,11 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.value.ChangeListener;
@@ -28,6 +27,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -49,7 +49,7 @@ import org.json.JSONException;
 public class Controller implements Initializable {
 
     DB db = new DB();
-    private final ObservableList<WorkTime> workTimeData = FXCollections.observableArrayList();
+    private final ArrayList<WorkTime> workTimeData = new ArrayList<>();
     private final ObservableList<TableViewWriteOutExtended> TVWODataExtended = FXCollections.observableArrayList();
 
     private final ArrayList<WorkTime> workTimeDataArrayList = new ArrayList<>();
@@ -88,7 +88,7 @@ public class Controller implements Initializable {
     @FXML
     Button addNewWorkerButton;
     /*@FXML
-    Button cancelButton;*/
+    Button cancelSecondaryPanes;*/
     @FXML
     Button openDeleteWorkerAnchorPane;
     @FXML
@@ -143,10 +143,6 @@ public class Controller implements Initializable {
     @FXML
     AnchorPane deleteWorkerAnchorPane;
 //</editor-fold>  
-//<editor-fold defaultstate="collapsed" desc="ProgressIndicator">
-    @FXML
-    ProgressIndicator pi;
-//</editor-fold>
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="CHOICE BOXES">
@@ -240,29 +236,6 @@ public class Controller implements Initializable {
         search();
     }
 
-    private void WorkTimeToTVWOEFromDB() {
-        TVWODataExtended.clear();
-        workTimeData.clear();
-
-        ArrayList<WorkTime> works = db.getAllWorkTimes();
-        ArrayList<Worker> workers = db.getWorkers();
-
-        for (WorkTime i : works) {
-            workTimeData.add(i);
-            for (Worker j : workers) {
-                if (i.getWorkerID() == j.getID()) {
-                    TableViewWriteOutExtended tvwoe = new TableViewWriteOutExtended(i, j.getName());
-                    TVWODataExtended.add(tvwoe);
-                }
-            }
-        }
-    }
-
-    private void WorkTimesFromDB() {
-        workTimeData.clear();
-        ArrayList<WorkTime> works = db.getAllWorkTimes();
-        workTimeData.addAll(works);
-    }
 
     private void search() {
         try {
@@ -274,7 +247,7 @@ public class Controller implements Initializable {
             }
             
             String idString = "" + searchNameChoiceBox.getSelectionModel().getSelectedItem();
-            if (!idString.equals("All") && (idString.indexOf("(") > 0)) {
+            if (!idString.equals("All")) {
                 workerID = Integer.parseInt(idString.substring(idString.indexOf("(") + 1, idString.indexOf(")")));
             } else {
                 workerID = 0;
@@ -282,23 +255,19 @@ public class Controller implements Initializable {
             
             month = (Integer) monthChoiceBox.getSelectionModel().getSelectedIndex();
 
-
-            if (year == 0 && month == 0 && workerID == 0) {
-                
-                WorkTimeToTVWOEFromDB();
-            } else {
-                TVWODataExtended.clear();
-                WorkTimesFromDB();
-                ArrayList<WorkTime> tmp = new ArrayList<>();
-                for (WorkTime i : workTimeData) {
-                    if ((i.getYear() == year || year == 0) && (i.getMonth() == month || month == 0) && (i.getWorkerID() == workerID || workerID == 0)) {
-                        TVWODataExtended.add(new TableViewWriteOutExtended(i, db.getWorkerNameByID(i.getWorkerID())));
-                        tmp.add(i);
-                    }
+            TVWODataExtended.clear();
+            workTimeData.clear();
+            workTimeData.addAll(db.getAllWorkTimes());
+            ArrayList<WorkTime> tmp = new ArrayList<>();
+            for (WorkTime i : workTimeData) {
+                if ((i.getYear() == year || year == 0) && (i.getMonth() == month || month == 0) && (i.getWorkerID() == workerID || workerID == 0)) {
+                    TVWODataExtended.add(new TableViewWriteOutExtended(i, db.getWorkerNameByID(i.getWorkerID())));
+                    tmp.add(i);
                 }
-                workTimeData.clear();
-                workTimeData.addAll(tmp);
             }
+            workTimeData.clear();
+            workTimeData.addAll(tmp);
+
             calculateTotalWorkedHours();
         } catch (NumberFormatException ex) {
             System.out.println("Problem in \"FXMLDocumentController\" \"search\" method!");
@@ -321,26 +290,31 @@ public class Controller implements Initializable {
         }
         
         totalLabel.setText(TableViewWriteOutExtended.formatter(hour, minute));
-        bonuses();
+        calcMoney();
         
     }
-    private void bonuses() {
+    private void setLabelsIfEmpty() {
+
+        normalAmount.setText("0");
+        extraAmount.setText("0");
+        bigextraAmount.setText("0");
+        totalam.setText("0");
+        net.setText("0");
+        normalHoursLabel.setText("0");
+        extraHoursLabel.setText("0");
+        bigextraHoursLabel.setText("0");
+        bonusLabel.setText("0");
+
+    }
+    private void calcMoney() {
         if (workTimeData.isEmpty()) {
-            normalAmount.setText("0");
-            extraAmount.setText("0");
-            bigextraAmount.setText("0");
-            totalam.setText("0");
-            net.setText("0");
-            normalHoursLabel.setText("0");
-            extraHoursLabel.setText("0");
-            bigextraHoursLabel.setText("0");
-            bonusLabel.setText("0");
+            setLabelsIfEmpty();
+        } else {
+            calculateNormal();
+            calculateExtra();
+            calculateBigExtra();
+            calculateTotal();
         }
-        calculateNormal();
-        calculateExtra();
-        calculateBigExtra();
-        calculateTotal();
-        
     }
     private void calculateNormal() {
         double hours = 0;
@@ -400,16 +374,16 @@ public class Controller implements Initializable {
     }
     private void calculateBigExtra() {
         double hours = 0;
-        int fridayOrSaturday = 0;
-        Boolean gotBonus1 = false;
-        Boolean gotBonus2 = false;
+        int countFridayOrSaturday = 0;
+        Boolean fridayOrSaturday = false;
+        Boolean workedEightHours = false;
         
         for (WorkTime i : workTimeData) {
             int start = 0, end = 0;
             start = i.getStartHour() * 60 + i.getStartMinute();
             end = i.getEndHour() * 60 + i.getEndMinute();
             
-            if (start <= 1320 && end >= 360) gotBonus2 = true;
+            if (start <= 1320 && end >= 360) workedEightHours = true;
             
             if ((start < 1320 || start >= 1320) && (end >= 1320 || end < 600)) {
                 try {
@@ -420,9 +394,7 @@ public class Controller implements Initializable {
                     }
                     if (start < 1320) start = 1320;
                     hours += end - start;
-                    
-                    
-                    
+                      
                     String dateString = String.format("%d-%d-%d", i.getYear(), i.getMonth(), i.getDay());
                     Date date = null;
                     date = new SimpleDateFormat("yyyy-M-d").parse(dateString);
@@ -430,17 +402,17 @@ public class Controller implements Initializable {
                     String dayOfWeek = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date);
                     
                     if (dayOfWeek.equals("Friday") || dayOfWeek.equals("Saturday")) {
-                        gotBonus1 = true;
+                        fridayOrSaturday = true;
                     }
                     
-                    if (gotBonus1 && gotBonus2) fridayOrSaturday++;
+                    if (fridayOrSaturday && workedEightHours) countFridayOrSaturday++;
                 } catch (ParseException ex) {
                     Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
         
-        int bonus = fridayOrSaturday * 3000;
+        int bonus = countFridayOrSaturday * 3000;
         bonusLabel.setText(""+bonus);
         
         hours /= 60;
@@ -496,11 +468,43 @@ public class Controller implements Initializable {
     }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Buttons">
+
+    private void transition(Node whatToTransition, double from, double to, int millisDuration) {
+        FadeTransition tmp = new FadeTransition();
+        tmp.setDuration(Duration.millis(millisDuration));
+        tmp.setNode(whatToTransition);
+        tmp.setFromValue(from);
+        tmp.setToValue(to);
+        tmp.play();
+    }
+
     @FXML
-    private void openAddNewWorkerButton(ActionEvent event) {
-        mainAnchorPane.setOpacity(0.3);
+    private void openButtons(ActionEvent event) {
+        transition(mainAnchorPane, 1, 0.2, 250);
         mainAnchorPane.setDisable(true);
-        addWorkerAnchorPane.setVisible(true);
+        final Node source = (Node) event.getSource();
+        String id = source.getId();
+
+        if (id.equals("openAddNewWorkerButton")) {
+            addWorkerAnchorPane.setVisible(true);
+            transition(addWorkerAnchorPane, 0.1, 1, 250);
+        } else if (id.equals("openDeleteWorkerButton")) {
+            deleteWorkerAnchorPane.setVisible(true);
+            transition(deleteWorkerAnchorPane, 0.1, 1, 250);
+        }
+
+    }
+    
+    @FXML
+    private void cancelSecondaryPanes(ActionEvent event) {
+        if (addWorkerAnchorPane.isVisible()) {
+            addWorkerAnchorPane.setVisible(false);
+        } else if (deleteWorkerAnchorPane.isVisible()) {
+            deleteWorkerAnchorPane.setVisible(false);
+        }
+        
+        transition(mainAnchorPane, 0.3, 1, 250);
+        mainAnchorPane.setDisable(false);
     }
     
     @FXML
@@ -509,89 +513,54 @@ public class Controller implements Initializable {
         if (!name.equals("")) {
             workerNameTextField.setText("");
             db.addWorker(name);
-            addWorkerAnchorPane.setVisible(false);
-            mainAnchorPane.setOpacity(1);
-            mainAnchorPane.setDisable(false);
 
             setNamesChoiceBoxes();
+            cancelSecondaryPanes(event);
         }
     }
 
-    @FXML
-    private void cancelButton(ActionEvent event) {
-        if (addWorkerAnchorPane.isVisible()) {
-            addWorkerAnchorPane.setVisible(false);
-        } else {
-            deleteWorkerAnchorPane.setVisible(false);
-        }
-        mainAnchorPane.setOpacity(1);
-        mainAnchorPane.setDisable(false);
-    }
-    
-    @FXML
-    private void openDeleteWorkerButton(ActionEvent event) {
-        mainAnchorPane.setOpacity(0.3);
-        mainAnchorPane.setDisable(true);
-        deleteWorkerAnchorPane.setVisible(true);
-    }
-    
+
     @FXML
     private void deleteWorker(ActionEvent event) {
         String choiceBoxName = (String) deleteNameChoiceBox.getSelectionModel().getSelectedItem();
         int workerid = Integer.parseInt(choiceBoxName.substring(choiceBoxName.indexOf("(") + 1, choiceBoxName.indexOf(")")));
         db.deleteWorker(workerid);
         
-        setNamesChoiceBoxes();
-        
-        
-        deleteWorkerAnchorPane.setVisible(false);
-        mainAnchorPane.setOpacity(1);
-        mainAnchorPane.setDisable(false);
-
+        setNamesChoiceBoxes();     
+        cancelSecondaryPanes(event);
     }
     
     @FXML
     private void addButton(ActionEvent event) {
-        try {
-            Boolean t = false;
+        if (!addNameChoiceBox.getValue().equals("")) {
             int startHour = 0, endHour = 0, startMinute = 0, endMinute = 0;
-            
+
             startHour = Integer.parseInt(startHourInput.getText());
             endHour = Integer.parseInt(endHourInput.getText());
             startMinute = Integer.parseInt(startMinuteInput.getText());
             endMinute = Integer.parseInt(endMinuteInput.getText());
-            
-            if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23 || startMinute < 0 || startMinute > 59 || endMinute < 0 || endMinute > 59) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Problem!");
-                alert.setHeaderText("Wrong input!");
-                alert.setContentText("Bad interval!");
-                alert.showAndWait();
-            } else {
-                
-                HourMinute startTMP = new HourMinute(startHour, startMinute);
-                HourMinute endTMP = new HourMinute(endHour, endMinute);
-                HourMinute totalTMP = CalcTotal.calcTotal(startTMP, endTMP);
-                LocalDate ld = datePicker.getValue();
-                
-                String choiceBoxName = (String) addNameChoiceBox.getSelectionModel().getSelectedItem();
-                int workerid = Integer.parseInt(choiceBoxName.substring(choiceBoxName.indexOf("(") + 1, choiceBoxName.indexOf(")")));
-                
-                WorkTime workTime = new WorkTime(startTMP, endTMP, totalTMP, ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth(), -1, workerid);
-                db.addWork(workTime);
-                
-                search();
-            }
-            
-        } catch (Exception ex) {
+
+            HourMinute startTMP = new HourMinute(startHour, startMinute);
+            HourMinute endTMP = new HourMinute(endHour, endMinute);
+            HourMinute totalTMP = CalcTotal.calcTotal(startTMP, endTMP);
+            LocalDate ld = datePicker.getValue();
+
+            String choiceBoxName = (String) addNameChoiceBox.getSelectionModel().getSelectedItem();
+            int workerid = Integer.parseInt(choiceBoxName.substring(choiceBoxName.indexOf("(") + 1, choiceBoxName.indexOf(")")));
+
+            WorkTime workTime = new WorkTime(startTMP, endTMP, totalTMP, ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth(), -1, workerid);
+            db.addWork(workTime);
+
+            search();
+        } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Problem!");
-            alert.setHeaderText("Wrong input!");
-            alert.setContentText("Please make sure you type only numbers in the fields!");
+            alert.setTitle("Warning");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a worker!");
             alert.showAndWait();
         }
     }
-    
+   
     @FXML
     private void deleteButton(ActionEvent event) {
         if (table.getSelectionModel().getSelectedIndex() != -1) {
@@ -618,29 +587,27 @@ public class Controller implements Initializable {
     }
 //</editor-fold>
     
-    private void setDateLabel() throws IOException, JSONException {
-        AtomicLong unixtime = new AtomicLong(Unixtime.getTime());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
-            try {
-                Date date = new Date(unixtime.getAndIncrement() * 1000L);
-                dateLabel.setText(sdf.format(date));
-            } catch (Exception ex) {
-                Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }), new KeyFrame(Duration.seconds(1)));
-        clock.setCycleCount(Animation.INDEFINITE);
-        clock.play();
-        
-        /*Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
-            try {
-                dateLabel.setText(Unixtime.getTime());
-            } catch (IOException | JSONException ex) {
-                Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }), new KeyFrame(Duration.seconds(1)));
-        clock.setCycleCount(Animation.INDEFINITE);
-        clock.play();*/
+    private void setDateLabel() {
+        try {
+            AtomicLong unixtime = new AtomicLong(Unixtime.getTime());
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
+                try {
+                    Date date = new Date(unixtime.getAndIncrement() * 1000L);
+                    dateLabel.setText(sdf.format(date));
+                } catch (Exception ex) {
+                    Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }), new KeyFrame(Duration.seconds(1)));
+            clock.setCycleCount(Animation.INDEFINITE);
+            clock.play();
+        } catch (Exception ex) {
+            System.out.println("Problem in Controller/setDateLabel method!");
+            System.out.println(ex);
+            
+        }
+
     }
     
     @Override
@@ -648,12 +615,7 @@ public class Controller implements Initializable {
         datePicker.setValue(LocalDate.now());
         fillChoiceBoxes();
         tableColumns();
-        
-        try {
-            setDateLabel();
-        } catch (IOException | JSONException ex) {
-            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        setDateLabel();
         
         yearChoiceBox.setOnAction((event) -> {
             search();
@@ -664,14 +626,9 @@ public class Controller implements Initializable {
         searchNameChoiceBox.setOnAction((event) -> {
             search();
         });
-//<editor-fold defaultstate="collapsed" desc="Stuff">
-        wageHourly.textProperty().addListener((observable, oldValue, newValue) -> {
-            String tmp = wageHourly.getText();
-            if (tmp.equals("")) {
-                wageHourly.setText("0");
-            }
-            calculateTotalWorkedHours();
-        });
+        
+        
+//<editor-fold defaultstate="collapsed" desc="IMAGES">
 
         InputStream input = getClass().getResourceAsStream("/images/plus.png");
         Image image = new Image(input);
@@ -684,21 +641,20 @@ public class Controller implements Initializable {
         deleteButton.setGraphic(imageView2);
 
 //</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="TEXT FIELDS ONLY NUMBERS (TEXT PROPERTIES)">
+//<editor-fold defaultstate="collapsed" desc="TEXT FIELD LISTENERS">
         startHourInput.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     startHourInput.setText(newValue.replaceAll("[^\\d]", ""));
-                } else if (startHourInput.getText().equals("")) {
+                } else if (newValue.equals("")) {
                     startHourInput.setText("0");
                 } else if (oldValue.equals("0")) {
                     startHourInput.setText(newValue.substring(1));
                 } else {
                     int time = Integer.parseInt(startHourInput.getText());
                     if (time > 23) {
-                        time /= 10;
-                        startHourInput.setText("" + time);
+                        startHourInput.setText(oldValue);
                     }
                 }
             }
@@ -709,15 +665,14 @@ public class Controller implements Initializable {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     startMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
-                } else if (startMinuteInput.getText().equals("")) {
+                } else if (newValue.equals("")) {
                     startMinuteInput.setText("0");
                 } else if (oldValue.equals("0")) {
                     startMinuteInput.setText(newValue.substring(1));
                 } else {
                     int time = Integer.parseInt(startMinuteInput.getText());
                     if (time > 59) {
-                        time /= 10;
-                        startMinuteInput.setText("" + time);
+                        startMinuteInput.setText(oldValue);
                     }
                 }
             }
@@ -728,15 +683,14 @@ public class Controller implements Initializable {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     endHourInput.setText(newValue.replaceAll("[^\\d]", ""));
-                } else if (endHourInput.getText().equals("")) {
+                } else if (newValue.equals("")) {
                     endHourInput.setText("0");
                 } else if (oldValue.equals("0")) {
                     endHourInput.setText(newValue.substring(1));
                 } else {
                     int time = Integer.parseInt(endHourInput.getText());
                     if (time > 23) {
-                        time /= 10;
-                        endHourInput.setText("" + time);
+                        endHourInput.setText(oldValue);
                     }
                 }
             }
@@ -747,15 +701,14 @@ public class Controller implements Initializable {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     endMinuteInput.setText(newValue.replaceAll("[^\\d]", ""));
-                } else if (endMinuteInput.getText().equals("")) {
+                } else if (newValue.equals("")) {
                     endMinuteInput.setText("0");
                 } else if (oldValue.equals("0")) {
                     endMinuteInput.setText(newValue.substring(1));
                 } else {
                     int time = Integer.parseInt(endMinuteInput.getText());
                     if (time > 59) {
-                        time /= 10;
-                        endMinuteInput.setText("" + time);
+                       endMinuteInput.setText(oldValue);
                     }
                 }
             }
@@ -766,7 +719,10 @@ public class Controller implements Initializable {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     wageHourly.setText(newValue.replaceAll("[^\\d]", ""));
+                } else if (newValue.equals("")) {
+                    wageHourly.setText("0");
                 }
+                calculateTotalWorkedHours();
             }
         });
 //</editor-fold>
